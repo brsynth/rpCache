@@ -1,0 +1,42 @@
+version: '2.4'
+
+services:
+
+  install:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: brsynth/rpcache
+    command: python3 /home/rpCache.py
+    volumes:
+      - $PWD/install_data.sh:/home/install_data.sh:ro
+      - input_cache:/home/input_cache
+      - cache:/home/cache
+
+  backup:
+    image: alpine
+    volumes:
+      - input_cache:/input_cache:ro
+      - cache:/cache:ro
+      - $PWD/backup:/backup
+    entrypoint: sh -c "
+                  tar -czf /backup/input_cache.tgz /input_cache
+               && tar -czf /backup/cache.tgz /cache
+                  "
+    network_mode: "none"
+
+  restore:
+    image: alpine
+    volumes:
+      - input_cache:/input_cache
+      - cache:/cache
+      - $PWD/backup:/backup:ro
+    entrypoint: sh -c "
+                  tar -xzf /backup/input_cache.tgz -C /
+               && tar -xzf /backup/cache.tgz -C /
+                  "
+    network_mode: "none"
+
+volumes:
+  input_cache:
+  cache:
