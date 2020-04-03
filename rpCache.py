@@ -91,11 +91,13 @@ class rpCache:
 
         for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv']:
             if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
+                print("Downloading "+file+"...")
                 urllib.request.urlretrieve(url+file, dirname+'/input_cache/'+file)
 
         #TODO: need to add this file to the git or another location
         for file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
             if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
+                print("Downloading "+file+"...")
                 urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
                                            dirname+'/input_cache/rr02_more_data.tar.gz')
                 tar = tarfile.open(dirname+'/input_cache/rr02_more_data.tar.gz', 'r:gz')
@@ -109,6 +111,7 @@ class rpCache:
                 shutil.rmtree(dirname+'/input_cache/rr02_more_data')
 
         if not os.path.isfile(dirname+'/input_cache/rules_rall.tsv') or fetchInputFiles:
+            print("Downloading rules_rall.tsv...")
             urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
                                        dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
             tar = tarfile.open(dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
