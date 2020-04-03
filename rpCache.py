@@ -125,8 +125,9 @@ class rpCache:
 
         pickle_pattern = 'deprecatedMNXM'
         filename = 'chem_xref.tsv'
-        self._gen_pickle(pickle_pattern, filename, dirname)
+        self._gen_pickle_to_redis(pickle_pattern, filename, dirname)
 
+        return True
 
         picklename = 'deprecatedMNXR_mnxr.pickle'
         filename = 'reac_xref.tsv'
@@ -183,7 +184,7 @@ class rpCache:
 
     def _gen_pickle_to_redis(self, pickle_pattern, input_file, dirname):
         picklename = pickle_pattern+'_mnxm.pickle'
-        print(picklename)
+        print("Generating "+picklename+"...")
         if self.redis.get(picklename)==None:
             print("Generating "+picklename+"...")
             method = getattr(self, pickle_pattern)
