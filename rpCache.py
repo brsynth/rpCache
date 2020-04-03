@@ -25,7 +25,9 @@ class rpCache:
     #
     # @param self The object pointer
     # @param inputPath The path to the folder that contains all the input/output files required
-    def __init__(self):
+    # @param db Mode of storing objects ('file' or 'redis')
+    def __init__(self, db='file'):
+        self.store_mode = db
         #given by Thomas
         self.logger = logging.getLogger(__name__)
         self.logger.info('Started instance of rpCache')
@@ -42,7 +44,7 @@ class rpCache:
         self.chemXref = None
         self.rr_reactions = None
         self.chebi_mnxm = None
-        self.redis = redis.StrictRedis(host='redis', port=6379, db=0)
+        self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0)
         if not self._loadCache():
             raise ValueError
 
@@ -124,8 +126,10 @@ class rpCache:
         ###################### Populate the cache #################################
 
         picklename = 'deprecatedMNXM'
+        pickle_attr = picklename+'_mnxm'
         filename = 'chem_xref.tsv'
-        self._gen_pickle_to_redis(picklename, filename, dirname)
+        method = getattr(self, "_gen_pickle_to_"+self.store_mode)
+        method(picklename, pickle_attr, filename, dirname)
 
         picklename = 'deprecatedMNXR'
         filename = 'reac_xref.tsv'
@@ -167,23 +171,23 @@ class rpCache:
 
 
 
-    def _gen_pickle(self, picklename, input_file, dirname):
+    def _gen_pickle_to_file(self, picklename, pickle_attr, input_file, dirname):
         if not os.path.isfile(dirname+'/cache/'+picklename):
             print("Generating "+picklename+"...")
-            method = getattr(self, pickle_pattern)
-            attribute = getattr(self, pickle_pattern+'_mnxm')
-            method(dirname+'/input_cache/'+input_file)
-            pickle.dump(attribute, open(dirname+'/cache/'+picklename, 'wb'))
-        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
+            method = getattr(self, picklename)
+            # attribute = getattr(self, pickle_pattern+'_mnxm')
+            getattr(self, pickle_attr) = method(dirname+'/input_cache/'+input_file)
+            pickle.dump(getattr(self, pickle_attr), open(dirname+'/cache/'+picklename, 'wb'))
+        getattr(self, pickle_attr) = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
 
-    def _gen_pickle_to_redis(self, picklename, input_file, dirname):
+    def _gen_pickle_to_redis(self, picklename, pickle_attr, input_file, dirname):
         if self.redis.get(picklename)==None:
             print("Generating "+picklename+"...")
             method = getattr(self, picklename)
             pickle_obj = method(dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
-            self.redis.set(picklename, pickle_obj)
+            self.redis.set(pickle_attr+".pickle", pickle_obj)
 
 
 
@@ -465,4 +469,4 @@ class rpCache:
 
 
 if __name__ == "__main__":
-    rpcache = rpCache()
+    rpcache = rpCache('redis')
