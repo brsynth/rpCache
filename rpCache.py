@@ -194,7 +194,7 @@ class rpCache:
             self.redis.set(pickle_key, pickle_obj)
 
 
-    def _dump_pickle_to_file(picklename, pickle_filename, input_filename, dirname):
+    def _dump_pickle_to_file(self, picklename, pickle_filename, input_filename, dirname):
         if not os.path.isfile(dirname+'/cache/'+pickle_filename):
             print("Generating "+pickle_filename+"...")
             method = getattr(self, '_'+picklename)
