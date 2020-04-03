@@ -2,7 +2,6 @@ import os
 from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
 import csv
 import logging
-import os
 import pickle
 import gzip
 import urllib.request
@@ -143,23 +142,22 @@ class rpCache:
         input_filename = 'chem_prop.tsv'
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_dump_pickle_to_"+self.store_mode)
-        method(picklename, pickle_filename, input_filename, dirname)
+        method(picklename, pickle_filename, dirname, input_filename, gzip=True)
+
+        picklename = 'chemXref'
+        pickle_filename = picklename+'.pickle.gz'
+        input_filename = 'chem_xref.tsv'
+        # Choose the method according to store_mode: 'file' or 'redis'
+        method = getattr(self, "_dump_pickle_to_"+self.store_mode)
+        method(picklename, pickle_filename, dirname, input_filename, gzip=True)
+
+        picklename = 'chebi_mnxm'
+        pickle_filename = picklename+'.pickle.gz'
+        # Choose the method according to store_mode: 'file' or 'redis'
+        method = getattr(self, "_dump_pickle_to_"+self.store_mode, gzip=True)
+        method(picklename, pickle_filename, dirname)
 
         return True
-
-        picklename = 'chemXref.pickle.gz'
-        filename = 'chem_xref.tsv'
-        if not os.path.isfile(dirname+'/cache/'+picklename):
-            self.chemXref = self.mnx_chemXref(dirname+'/input_cache/'+filename)
-            pickle.dump(self.chemXref,
-                        gzip.open(dirname+'/cache/'+picklename,'wb'))
-        self.chemXref = pickle.load(gzip.open(dirname+'/cache/'+picklename, 'rb'))
-
-        picklename = 'chebi_mnxm.pickle.gz'
-        if not os.path.isfile(dirname+'/cache/'+picklename):
-            pickle.dump(self.chebi_xref(self.chemXref),
-                        gzip.open(dirname+'/cache/'+picklename,'wb'))
-        self.chebi_mnxm = pickle.load(gzip.open(dirname+'/cache/'+picklename, 'rb'))
 
         picklename = 'rr_reactions.pickle'
         filename = 'rules_rall.tsv'
@@ -194,24 +192,29 @@ class rpCache:
             self.redis.set(pickle_key, pickle_obj)
 
 
-    def _dump_pickle_to_file(self, picklename, pickle_filename, input_filename, dirname):
+    def _dump_pickle_to_file(self, picklename, pickle_filename, dirname, input_filename, gzip=False):
         if not os.path.isfile(dirname+'/cache/'+pickle_filename):
             print("Generating "+pickle_filename+"...")
             method = getattr(self, '_'+picklename)
             attribute = getattr(self, picklename)
             attribute = method(dirname+'/input_cache/rr_compounds.tsv',
                                dirname+'/input_cache/'+input_filename)
-            pickle.dump(attribute,
-                        gzip.open(dirname+'/cache/'+pickle_filename,'wb'))
+            if gzip:
+                open = "gzip.open"
+            else:
+                open = "open" 
+            eval("pickle.dump(attribute,"+open+"(dirname+'/cache/'+pickle_filename,'wb')")
+            # pickle.dump(attribute,
+            #             gzip.open(dirname+'/cache/'+pickle_filename,'wb'))
         attribute = pickle.load(gzip.open(dirname+'/cache/'+pickle_filename, 'rb'))
 
 
-    def _dump_pickle_to_redis(self, picklename, pickle_filename, input_filename, dirname):
+    def _dump_pickle_to_redis(self, picklename, pickle_filename, dirname, input_filename, gzip=False):
         if self.redis.get(pickle_filename)==None:
             print("Generating "+pickle_filename+"...")
             method = getattr(self, '_'+picklename)
             pickle_obj = method(dirname+'/input_cache/rr_compounds.tsv',
-                               dirname+'/input_cache/'+input_filename)
+                                dirname+'/input_cache/'+input_filename)
             pickle_obj = pickle.dumps(pickle_obj)
             self.redis.set(pickle_filename, pickle_obj)
 
@@ -403,7 +406,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _mnx_chemXref(self, chem_xref_path):
+    def _chemXref(self, chem_xref_path):
         chemXref = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -441,7 +444,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _chebi_xref(self, chemXref):
+    def _chebi_mnxm(self, chemXref):
         chebi_mnxm = {}
         for mnxm in chemXref:
             if 'chebi' in chemXref[mnxm]:
