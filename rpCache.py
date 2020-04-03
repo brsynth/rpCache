@@ -176,6 +176,7 @@ class rpCache:
             pickle.dump(attribute, open(dirname+'/cache/'+picklename, 'wb'))
         attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
+
     def _gen_pickle_to_redis(self, picklename, input_file, dirname):
         if self.redis.get(picklename)==None:
             print("Generating "+picklename+"...")
@@ -280,14 +281,15 @@ class rpCache:
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
     def deprecatedMNXR(self, reac_xref_path):
-        self.deprecatedMNXMR_mnxr = {}
+        deprecatedMNXMR_mnxr = {}
         with open(reac_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
                     mnx = row[0].split(':')
                     if mnx[0]=='deprecated':
-                        self.deprecatedMNXR_mnxr[mnx[1]] = row[1]
+                        deprecatedMNXR_mnxr[mnx[1]] = row[1]
+        return deprecatedMNXR_mnxr
 
 
     ## Function to parse the chemp_prop.tsv file from MetanetX and compounds.tsv from RetroRules. Uses the InchIkey as key to the dictionnary
