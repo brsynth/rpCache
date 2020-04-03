@@ -171,7 +171,7 @@ class rpCache:
 
     def _gen_pickle(self, pickle_pattern, input_file, dirname):
         picklename = pickle_pattern+'_mnxm.pickle'
-        print(picklename)
+        print("Generating "+picklename+"...")
         if not os.path.isfile(dirname+'/cache/'+picklename):
             print("Generating "+picklename+"...")
             method = getattr(self, pickle_pattern)
