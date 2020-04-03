@@ -129,13 +129,16 @@ class rpCache:
         picklename = 'deprecatedMNXM'
         pickle_attr = picklename+'_mnxm'
         filename = 'chem_xref.tsv'
+        # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, pickle_attr, filename, dirname)
 
         picklename = 'deprecatedMNXR'
         pickle_attr = picklename+'_mnxr'
         filename = 'reac_xref.tsv'
-        self._gen_pickle_to_redis(picklename, pickle_attr, filename, dirname)
+        # Choose the method according to store_mode: 'file' or 'redis'
+        method = getattr(self, "_gen_pickle_to_"+self.store_mode)
+        method(picklename, pickle_attr, filename, dirname)
 
         return True
 
