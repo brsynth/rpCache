@@ -206,6 +206,16 @@ class rpCache:
         attribute = pickle.load(gzip.open(dirname+'/cache/'+pickle_filename, 'rb'))
 
 
+    def _dump_pickle_to_redis(self, picklename, pickle_filename, input_filename, dirname):
+        if self.redis.get(pickle_filename)==None:
+            print("Generating "+pickle_filename+"...")
+            method = getattr(self, '_'+picklename)
+            pickle_obj = method(dirname+'/input_cache/rr_compounds.tsv',
+                               dirname+'/input_cache/'+input_filename)
+            pickle_obj = pickle.dumps(pickle_obj)
+            self.redis.set(pickle_filename, pickle_obj)
+
+
 
     ## Convert chemical depiction to others type of depictions
     #
