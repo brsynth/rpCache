@@ -134,7 +134,7 @@ class rpCache:
         picklename = 'deprecatedMNXR'
         pickle_attr = picklename+'_mnxr'
         filename = 'reac_xref.tsv'
-        self._gen_pickle_to_redis(picklename, filename, dirname)
+        self._gen_pickle_to_redis(picklename, pickle_attr, filename, dirname)
 
         return True
 
