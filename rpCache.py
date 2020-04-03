@@ -281,7 +281,7 @@ class rpCache:
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
     def deprecatedMNXR(self, reac_xref_path):
-        deprecatedMNXMR_mnxr = {}
+        deprecatedMNXR_mnxr = {}
         with open(reac_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
             for row in c:
