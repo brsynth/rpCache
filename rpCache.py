@@ -186,7 +186,8 @@ class rpCache:
             print("Generating "+picklename+"...")
             method = getattr(self, pickle_pattern)
             method(dirname+'/input_cache/'+input_file)
-            self.redis.set(picklename, getattr(self, pickle_pattern+'_mnxm'))
+            pickle = pickle.dumps(getattr(self, pickle_pattern+'_mnxm'))
+            self.redis.set(picklename, pickle)
 #        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
 
