@@ -182,8 +182,8 @@ class rpCache:
             method = getattr(self, picklename)
             attribute = getattr(self, pickle_attr)
             attribute = method(dirname+'/input_cache/'+input_file)
-            pickle.dump(attribute, open(dirname+'/cache/'+picklename, 'wb'))
-        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
+            pickle.dump(attribute, open(dirname+'/cache/'+picklename+'.pickle', 'wb'))
+        attribute = pickle.load(open(dirname+'/cache/'+picklename+'.pickle', 'rb'))
 
 
     def _gen_pickle_to_redis(self, picklename, pickle_attr, input_file, dirname):
