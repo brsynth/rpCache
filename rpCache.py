@@ -183,8 +183,8 @@ class rpCache:
         if self.redis.get(picklename)==None:
             print("Generating "+picklename+"...")
             method = getattr(self, picklename)
-            pickle = method(dirname+'/input_cache/'+input_file)
-            pickle_obj = pickle.dumps(getattr(self, pickle))
+            pickle_obj = method(dirname+'/input_cache/'+input_file)
+            pickle_obj = pickle.dumps(pickle_obj)
             self.redis.set(picklename, pickle_obj)
 #        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
