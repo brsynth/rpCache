@@ -126,29 +126,26 @@ class rpCache:
 
         ###################### Populate the cache #################################
 
-        picklename = 'deprecatedMNXM'
-        pickle_attr = picklename+'_mnxm'
-        filename = 'chem_xref.tsv'
+        picklename = 'deprecatedMNXM_mnxm'
+        input_filename = 'chem_xref.tsv'
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
-        method(picklename, pickle_attr, filename, dirname)
+        method(picklename, input_filename, dirname)
 
-        picklename = 'deprecatedMNXR'
-        pickle_attr = picklename+'_mnxr'
-        filename = 'reac_xref.tsv'
+        picklename = 'deprecatedMNXR_mnxr'
+        input_filename = 'reac_xref.tsv'
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
-        method(picklename, pickle_attr, filename, dirname)
+        method(picklename, input_filename, dirname)
+
+        picklename = 'mnxm_strc'
+        pickle_filename = picklename+'.pickle.gz'
+        input_filename = 'chem_prop.tsv'
+        # Choose the method according to store_mode: 'file' or 'redis'
+        method = getattr(self, "_dump_pickle_to_"+self.store_mode)
+        method(picklename, pickle_filename, input_filename, dirname)
 
         return True
-
-        picklename = 'mnxm_strc.pickle.gz'
-        filename = 'chem_prop.tsv'
-        if not os.path.isfile(dirname+'/cache/'+picklename):
-            pickle.dump(self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
-                                      dirname+'/input_cache/'+filename),
-                        gzip.open(dirname+'/cache/'+picklename,'wb'))
-        self.mnxm_strc = pickle.load(gzip.open(dirname+'/cache/'+picklename, 'rb'))
 
         picklename = 'chemXref.pickle.gz'
         filename = 'chem_xref.tsv'
@@ -176,23 +173,37 @@ class rpCache:
 
 
 
-    def _gen_pickle_to_file(self, picklename, pickle_attr, input_file, dirname):
-        if not os.path.isfile(dirname+'/cache/'+picklename):
-            print("Generating "+picklename+"...")
+    def _gen_pickle_to_file(self, picklename, input_file, dirname):
+        pickle_key = picklename+'.pickle'
+        if not os.path.isfile(dirname+'/cache/'+pickle_key):
+            print("Generating "+pickle_key+"...")
             method = getattr(self, picklename)
-            attribute = getattr(self, pickle_attr)
+            attribute = getattr(self, picklename)
             attribute = method(dirname+'/input_cache/'+input_file)
-            pickle.dump(attribute, open(dirname+'/cache/'+picklename+'.pickle', 'wb'))
-        attribute = pickle.load(open(dirname+'/cache/'+picklename+'.pickle', 'rb'))
+            pickle.dump(attribute, open(dirname+'/cache/'+pickle_key, 'wb'))
+        attribute = pickle.load(open(dirname+'/cache/'+pickle_key, 'rb'))
 
 
-    def _gen_pickle_to_redis(self, picklename, pickle_attr, input_file, dirname):
-        if self.redis.get(picklename)==None:
-            print("Generating "+picklename+"...")
+    def _gen_pickle_to_redis(self, picklename, input_file, dirname):
+        pickle_key = picklename+'.pickle'
+        if self.redis.get(pickle_key)==None:
+            print("Generating "+pickle_key+"...")
             method = getattr(self, picklename)
             pickle_obj = method(dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
-            self.redis.set(pickle_attr+".pickle", pickle_obj)
+            self.redis.set(pickle_key, pickle_obj)
+
+
+    def _dump_pickle_to_file(picklename, pickle_filename, input_filename, dirname):
+        if not os.path.isfile(dirname+'/cache/'+pickle_filename):
+            print("Generating "+pickle_filename+"...")
+            method = getattr(self, picklename)
+            attribute = getattr(self, picklename)
+            attribute = method(dirname+'/input_cache/rr_compounds.tsv',
+                               dirname+'/input_cache/'+input_filename)
+            pickle.dump(attribute,
+                        gzip.open(dirname+'/cache/'+pickle_filename,'wb'))
+        attribute = pickle.load(gzip.open(dirname+'/cache/'+pickle_filename, 'rb'))
 
 
 
@@ -267,7 +278,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return Dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def deprecatedMNXM(self, chem_xref_path):
+    def deprecatedMNXM_mnxm(self, chem_xref_path):
         deprecatedMNXM_mnxm = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -289,7 +300,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    def deprecatedMNXR(self, reac_xref_path):
+    def deprecatedMNXR_mnxr(self, reac_xref_path):
         deprecatedMNXR_mnxr = {}
         with open(reac_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
