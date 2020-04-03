@@ -177,7 +177,7 @@ class rpCache:
         pickle_key = picklename+'.pickle'
         if not os.path.isfile(dirname+'/cache/'+pickle_key):
             print("Generating "+pickle_key+"...")
-            method = '_'+getattr(self, picklename)
+            method = getattr(self, '_'+picklename)
             attribute = getattr(self, picklename)
             attribute = method(dirname+'/input_cache/'+input_file)
             pickle.dump(attribute, open(dirname+'/cache/'+pickle_key, 'wb'))
@@ -188,7 +188,7 @@ class rpCache:
         pickle_key = picklename+'.pickle'
         if self.redis.get(pickle_key)==None:
             print("Generating "+pickle_key+"...")
-            method = '_'+getattr(self, picklename)
+            method = getattr(self, '_'+picklename)
             pickle_obj = method(dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
             self.redis.set(pickle_key, pickle_obj)
@@ -197,7 +197,7 @@ class rpCache:
     def _dump_pickle_to_file(picklename, pickle_filename, input_filename, dirname):
         if not os.path.isfile(dirname+'/cache/'+pickle_filename):
             print("Generating "+pickle_filename+"...")
-            method = '_'+getattr(self, picklename)
+            method = getattr(self, '_'+picklename)
             attribute = getattr(self, picklename)
             attribute = method(dirname+'/input_cache/rr_compounds.tsv',
                                dirname+'/input_cache/'+input_filename)
