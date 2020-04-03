@@ -175,10 +175,10 @@ class rpCache:
         if not os.path.isfile(dirname+'/cache/'+picklename):
             print("Generating "+picklename+"...")
             method = getattr(self, picklename)
-            # attribute = getattr(self, pickle_pattern+'_mnxm')
-            getattr(self, pickle_attr) = method(dirname+'/input_cache/'+input_file)
-            pickle.dump(getattr(self, pickle_attr), open(dirname+'/cache/'+picklename, 'wb'))
-        getattr(self, pickle_attr) = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
+            attribute = getattr(self, pickle_attr)
+            attribute = method(dirname+'/input_cache/'+input_file)
+            pickle.dump(attribute, open(dirname+'/cache/'+picklename, 'wb'))
+        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
 
     def _gen_pickle_to_redis(self, picklename, pickle_attr, input_file, dirname):
