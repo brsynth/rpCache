@@ -127,14 +127,11 @@ class rpCache:
         filename = 'chem_xref.tsv'
         self._gen_pickle_to_redis(picklename, filename, dirname)
 
-        return True
-
-        picklename = 'deprecatedMNXR_mnxr.pickle'
+        picklename = 'deprecatedMNXR'
         filename = 'reac_xref.tsv'
-        if not os.path.isfile(dirname+'/cache/'+picklename):
-            self.deprecatedMNXR(dirname+'/input_cache/'+filename)
-            pickle.dump(self.deprecatedMNXR_mnxr, open(dirname+'/cache/'+picklename, 'wb'))
-        self.deprecatedMNXR_mnxr = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
+        self._gen_pickle_to_redis(picklename, filename, dirname)
+
+        return True
 
         picklename = 'mnxm_strc.pickle.gz'
         filename = 'chem_prop.tsv'
@@ -186,7 +183,6 @@ class rpCache:
             pickle_obj = method(dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
             self.redis.set(picklename, pickle_obj)
-#        attribute = pickle.load(open(dirname+'/cache/'+picklename, 'rb'))
 
 
 
