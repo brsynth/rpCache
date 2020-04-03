@@ -1,5 +1,5 @@
 import os
-from rdkit.Chem import MolFromSmiles, MolToSmiles, AddHs
+from rdkit.Chem import MolFromSmiles, MolFromInchi, MolToSmiles, MolToInchi, MolToInchiKey, AddHs
 import csv
 import logging
 import os
