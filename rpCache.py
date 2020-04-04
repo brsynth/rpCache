@@ -137,7 +137,7 @@ class rpCache:
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, dirname+'/input_cache/'+input_file, dirname)
 
-        picklename = 'mnxm_strc.pickle'
+        picklename = 'mnxm_strc'
         input_file = 'chem_prop.tsv'
         if self.store_mode=='redis':
             if self.redis.get(picklename)==None:
@@ -159,13 +159,13 @@ class rpCache:
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, dirname+'/input_cache/'+input_file, dirname)
 
-        picklename = 'chebi_mnxm.pickle.gz'
+        picklename = 'chebi_mnxm'
         input_file = self.chemXref
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, input_file, dirname)
 
-        picklename = 'rr_reactions.pickle'
+        picklename = 'rr_reactions'
         input_file = 'rules_rall.tsv'
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
