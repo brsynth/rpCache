@@ -191,7 +191,7 @@ class rpCache:
 
 
     def _gen_pickle_to_redis(self, picklename, input_arg, dirname):
-        pickle_key = picklename+'.pickle'
+        pickle_key = picklename+'.pickle.z'
         if self.redis.get(pickle_key)==None:
             print("Generating "+pickle_key+"...")
             method = getattr(self, '_'+picklename)
@@ -201,7 +201,7 @@ class rpCache:
 
 
     def _get_pickle_from_redis(self, picklename):
-        return pickle.loads(zlib.decompress(self.redis.get(picklename+'.pickle')))
+        return pickle.loads(zlib.decompress(self.redis.get(picklename+'.pickle.z')))
 
 
 
