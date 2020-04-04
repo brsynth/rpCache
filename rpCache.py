@@ -198,7 +198,7 @@ class rpCache:
 
 
     def _get_pickle_from_redis(self, picklename):
-        return self.redis.get(picklename+'.pickle')
+        return pickle.load(self.redis.get(picklename+'.pickle'))
 
 
 
