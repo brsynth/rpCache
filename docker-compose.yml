@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: brsynth/rpcache
-    command: python3 /home/rpCache.py
+    command: python3.8 /home/rpCache.py
     networks:
       - redis
     volumes:
