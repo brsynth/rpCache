@@ -145,7 +145,7 @@ class rpCache:
                 pickle_obj = self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
                                              dirname+'/input_cache/'+input_file)
                 pickle_obj = pickle.dumps(pickle_obj)
-                self.redis.set(picklename, pickle_obj)
+                self.redis.set(picklename+'.pickle', pickle_obj)
         else:
             if not os.path.isfile(dirname+'/cache/'+picklename+'.gz'):
                 pickle.dump(self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
