@@ -12,9 +12,9 @@ services:
       - redis
     depends_on:
       - redis
-    # volumes:
-    #   - input_cache:/home/input_cache
-    #   - cache:/home/cache
+    volumes:
+      - input_cache:/home/input_cache
+      # - cache:/home/cache
 
   redis:
     image: redis:5-alpine
@@ -49,7 +49,7 @@ services:
   #   network_mode: "none"
 
 volumes:
-  # input_cache:
+  input_cache:
   # cache:
   redis:
 
