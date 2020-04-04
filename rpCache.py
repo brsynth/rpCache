@@ -160,7 +160,7 @@ class rpCache:
         method(picklename, dirname+'/input_cache/'+input_file, dirname)
 
         picklename = 'chebi_mnxm'
-        input_file = _get_pickle_from_redis('chemXref')
+        input_file = self._get_pickle_from_redis('chemXref')
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, input_file, dirname)
