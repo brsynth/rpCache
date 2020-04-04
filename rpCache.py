@@ -129,8 +129,8 @@ class rpCache:
         input_file = 'chem_xref.tsv'
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
-            pickle_obj = self._gen_pickle(picklename,
-                                          dirname+'/input_cache/'+input_file)
+            pickle_obj = self.deprecatedMNXM(picklename,
+                                             dirname+'/input_cache/'+input_file)
             self.setAttribute(pickle_key, pickle_obj)
 
         # # Choose the method according to store_mode: 'file' or 'redis'
@@ -141,8 +141,8 @@ class rpCache:
         input_file = 'reac_xref.tsv'
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
-            pickle_obj = self._gen_pickle(picklename,
-                                          dirname+'/input_cache/'+input_file)
+            pickle_obj = self.deprecatedMNXR(picklename,
+                                             dirname+'/input_cache/'+input_file)
             self.setAttribute(pickle_key, pickle_obj)
 
         picklename = 'mnxm_strc'
@@ -150,8 +150,8 @@ class rpCache:
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
             print("Generating "+pickle_key+"...")
-            pickle_obj = self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
-                                         dirname+'/input_cache/'+input_file)
+            pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
+                                       dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
             self.setAttribute(pickle_key, pickle_obj)
         # else:
@@ -166,45 +166,39 @@ class rpCache:
         input_file = 'chem_xref.tsv'
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
-            pickle_obj = self._gen_pickle(picklename,
-                                          dirname+'/input_cache/'+input_file)
+            pickle_obj = self.mnx_chemXref(picklename,
+                                           dirname+'/input_cache/'+input_file)
             self.setAttribute(pickle_key, pickle_obj)
 
         picklename = 'chebi_mnxm'
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
-            pickle_obj = self._gen_pickle(picklename,
-                                          self.getAttribute('chemXref'))
+            pickle_obj = self.chebi_xref(picklename,
+                                         self.getAttribute('chemXref'))
             self.setAttribute(pickle_key, pickle_obj)
 
         picklename = 'rr_reactions'
         input_file = 'rules_rall.tsv'
         pickle_key = picklename+'.pickle'
         if self.getAttribute(pickle_key)==None:
-            pickle_obj = self._gen_pickle(picklename,
-                                          dirname+'/input_cache/'+input_file)
+            pickle_obj = self.retro_reactions(picklename,
+                                              dirname+'/input_cache/'+input_file)
             self.setAttribute(pickle_key, pickle_obj)
 
         return True
 
 
 
-    def _gen_pickle_to_file(self, picklename, input_arg, dirname):
-        pickle_key = picklename+'.pickle'
-        if not os.path.isfile(dirname+'/cache/'+pickle_key):
-            print("Generating "+pickle_key+"...")
-            method = getattr(self, '_'+picklename)
-            attribute = getattr(self, picklename)
-            attribute = method(input_arg)
-            pickle.dump(attribute, open(dirname+'/cache/'+pickle_key, 'wb'))
-        attribute = pickle.load(open(dirname+'/cache/'+pickle_key, 'rb'))
+    # def _gen_pickle_to_file(self, picklename, input_arg, dirname):
+    #     pickle_key = picklename+'.pickle'
+    #     if not os.path.isfile(dirname+'/cache/'+pickle_key):
+    #         print("Generating "+pickle_key+"...")
+    #         method = getattr(self, '_'+picklename)
+    #         attribute = getattr(self, picklename)
+    #         attribute = method(input_arg)
+    #         pickle.dump(attribute, open(dirname+'/cache/'+pickle_key, 'wb'))
+    #     attribute = pickle.load(open(dirname+'/cache/'+pickle_key, 'rb'))
 
-
-    def _gen_pickle(self, picklename, input_arg):
-        print("Generating "+pickle_key+"...")
-        method = getattr(self, '_'+picklename)
-        pickle_obj = method(input_arg)
-        return pickle.dumps(pickle_obj)
 
     def getAttribute(self, picklename):
         return pickle.loads(self.redis.get(picklename+'.pickle'))
@@ -284,7 +278,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return Dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _deprecatedMNXM_mnxm(self, chem_xref_path):
+    def deprecatedMNXM(self, chem_xref_path):
         deprecatedMNXM_mnxm = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -306,7 +300,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    def _deprecatedMNXR_mnxr(self, reac_xref_path):
+    def deprecatedMNXR(self, reac_xref_path):
         deprecatedMNXR_mnxr = {}
         with open(reac_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -325,7 +319,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param chem_prop_path Input file path
     #  @return mnxm_strc Dictionnary of formula, smiles, inchi and inchikey
-    def _mnxm_strc(self, rr_compounds_path, chem_prop_path):
+    def mnx_strc(self, rr_compounds_path, chem_prop_path):
         mnxm_strc = {}
         for row in csv.DictReader(open(rr_compounds_path), delimiter='\t'):
             tmp = {'formula':  None,
@@ -399,7 +393,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _chemXref(self, chem_xref_path):
+    def mnx_chemXref(self, chem_xref_path):
         chemXref = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -437,7 +431,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _chebi_mnxm(self, chemXref):
+    def chebi_xref(self, chemXref):
         chebi_mnxm = {}
         for mnxm in chemXref:
             if 'chebi' in chemXref[mnxm]:
@@ -453,7 +447,7 @@ class rpCache:
     #  @param self The object pointer.
     #  @param path The input file path.
     #  @return rule Dictionnary describing each reaction rule
-    def _rr_reactions(self, rules_rall_path):
+    def retro_reactions(self, rules_rall_path):
         try:
             #with open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
