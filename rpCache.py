@@ -160,7 +160,7 @@ class rpCache:
         method(picklename, dirname+'/input_cache/'+input_file, dirname)
 
         picklename = 'chebi_mnxm'
-        input_file = self.chemXref
+        input_file = _get_pickle_from_redis('chemXref')
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, input_file, dirname)
@@ -196,34 +196,9 @@ class rpCache:
             pickle_obj = pickle.dumps(pickle_obj)
             self.redis.set(pickle_key, pickle_obj)
 
+    def _get_pickle_from_redis(self, picklename):
+        return self.redis.get(picklename)
 
-    def _dump_pickle_to_file(self, picklename, pickle_filename, dirname, input_filename="", gzip=False):
-        if not os.path.isfile(dirname+'/cache/'+pickle_filename):
-            print("Generating "+pickle_filename+"...")
-            method = getattr(self, '_'+picklename)
-            attribute = getattr(self, picklename)
-            attribute = method(dirname+'/input_cache/rr_compounds.tsv',
-                               dirname+'/input_cache/'+input_filename)
-            if gzip:
-                pickle.dump(attribute,
-                            gzip.open(dirname+'/cache/'+pickle_filename,'wb'))
-            else:
-                pickle.dump(attribute,
-                            open(dirname+'/cache/'+pickle_filename,'wb'))
-        if gzip:
-            attribute = pickle.load(gzip.open(dirname+'/cache/'+pickle_filename, 'rb'))
-        else:
-            attribute = pickle.load(open(dirname+'/cache/'+pickle_filename, 'rb'))
-
-
-    def _dump_pickle_to_redis(self, picklename, pickle_filename, dirname, input_filename="", gzip=False):
-        if self.redis.get(pickle_filename)==None:
-            print("Generating "+pickle_filename+"...")
-            method = getattr(self, '_'+picklename)
-            pickle_obj = method(dirname+'/input_cache/rr_compounds.tsv',
-                                dirname+'/input_cache/'+input_filename)
-            pickle_obj = pickle.dumps(pickle_obj)
-            self.redis.set(pickle_filename, pickle_obj)
 
 
 
