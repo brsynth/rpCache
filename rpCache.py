@@ -9,8 +9,6 @@ import re
 import tarfile
 import shutil
 import redis
-import zlib
-
 
 #######################################################
 ################### rpCache  ##########################
@@ -191,17 +189,17 @@ class rpCache:
 
 
     def _gen_pickle_to_redis(self, picklename, input_arg, dirname):
-        pickle_key = picklename+'.pickle.z'
+        pickle_key = picklename+'.pickle'
         if self.redis.get(pickle_key)==None:
             print("Generating "+pickle_key+"...")
             method = getattr(self, '_'+picklename)
             pickle_obj = method(input_arg)
             pickle_obj = pickle.dumps(pickle_obj)
-            self.redis.set(pickle_key, zlib.compress(pickle_obj))
+            self.redis.set(pickle_key, pickle_obj)
 
 
     def _get_pickle_from_redis(self, picklename):
-        return pickle.loads(zlib.decompress(self.redis.get(picklename+'.pickle.z')))
+        return pickle.loads(self.redis.get(picklename+'.pickle'))
 
 
 
