@@ -142,7 +142,7 @@ class rpCache:
         if self.store_mode=='redis':
             if self.redis.get(picklename)==None:
                 print("Generating "+picklename+"...")
-                pickle_obj = pickle.dumps(self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
+                pickle_obj = pickle.dumps(self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
                                                         dirname+'/input_cache/'+input_filename))
                 pickle_obj = pickle.dumps(pickle_obj)
                 self.redis.set(picklename, pickle_obj)
