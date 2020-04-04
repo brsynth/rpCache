@@ -2,6 +2,8 @@ FROM brsynth/rdkit:debian
 
 RUN python -m pip install redis
 
-COPY rpCache.py /home/
+WORKDIR /home
+
+COPY rpCache.py .
 
 RUN ldconfig
