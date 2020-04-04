@@ -139,19 +139,21 @@ class rpCache:
 
         picklename = 'mnxm_strc'
         input_file = 'chem_prop.tsv'
+        pickle_key = picklename+'.pickle'
         if self.store_mode=='redis':
-            if self.redis.get(picklename)==None:
-                print("Generating "+picklename+"...")
+            if self.redis.get(pickle_key)==None:
+                print("Generating "+pickle_key+"...")
                 pickle_obj = self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
                                              dirname+'/input_cache/'+input_file)
                 pickle_obj = pickle.dumps(pickle_obj)
-                self.redis.set(picklename+'.pickle', pickle_obj)
+                self.redis.set(pickle_key, pickle_obj)
         else:
-            if not os.path.isfile(dirname+'/cache/'+picklename+'.gz'):
+            if not os.path.isfile(dirname+'/cache/'+pickle_key+'.gz'):
+                print("Generating "+picklename+"...")
                 pickle.dump(self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
                                             dirname+'/input_cache/'+input_file),
                             gzip.open(dirname+'/cache/'+picklename+'.gz','wb'))
-            self.mnxm_strc = pickle.load(gzip.open(dirname+'/cache/'+picklename+'.gz', 'rb'))
+            self.mnxm_strc = pickle.load(gzip.open(dirname+'/cache/'+pickle_key+'.gz', 'rb'))
 
         picklename = 'chemXref'
         input_file = 'chem_xref.tsv'
@@ -170,7 +172,6 @@ class rpCache:
         # Choose the method according to store_mode: 'file' or 'redis'
         method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         method(picklename, dirname+'/input_cache/'+input_file, dirname)
-
 
         return True
 
