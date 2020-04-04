@@ -46,4 +46,4 @@ volumes:
 networks:
   redis:
     external:
-      name: redis_db
+      name: redis_db_redis
