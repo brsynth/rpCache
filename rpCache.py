@@ -39,14 +39,12 @@ class rpCache:
                             'MNXM145523': 'MNXM57',
                             'MNXM57425': 'MNXM9',
                             'MNXM137': 'MNXM588022'}
-        self.deprecatedMNXM_mnxm = {}
-        self.deprecatedMNXR_mnxr = {}
-        self.mnxm_strc = None
-        self.chemXref = None
-        self.rr_reactions = None
-        self.chebi_mnxm = None
-        if not self._loadCache():
-            raise ValueError
+        # self.deprecatedMNXM_mnxm = {}
+        # self.deprecatedMNXR_mnxr = {}
+        # self.mnxm_strc = None
+        # self.chemXref = None
+        # self.rr_reactions = None
+        # self.chebi_mnxm = None
 
     #####################################################
     ################# ERROR functions ###################
@@ -76,7 +74,7 @@ class rpCache:
     #
     # @param The oject pointer
     # @return Boolean detemining the success of the function or not
-    def _loadCache(self, fetchInputFiles=False):
+    def loadCache(self, fetchInputFiles=False):
 
         dirname = os.path.dirname(os.path.abspath( __file__ ))
 
@@ -486,3 +484,5 @@ class rpCache:
 
 if __name__ == "__main__":
     rpcache = rpCache('redis')
+    if not rpcache.loadCache():
+        raise ValueError
