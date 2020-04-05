@@ -128,10 +128,10 @@ class rpCache:
         picklename = 'deprecatedMNXM_mnxm'
         input_file = 'chem_xref.tsv'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             pickle_obj = self.deprecatedMNXM(picklename,
                                              dirname+'/input_cache/'+input_file)
-            self.setAttribute(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         # # Choose the method according to store_mode: 'file' or 'redis'
         # method = getattr(self, "_gen_pickle_to_"+self.store_mode)
@@ -140,20 +140,20 @@ class rpCache:
         picklename = 'deprecatedMNXR_mnxr'
         input_file = 'reac_xref.tsv'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             pickle_obj = self.deprecatedMNXR(picklename,
                                              dirname+'/input_cache/'+input_file)
-            self.setAttribute(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         picklename = 'mnxm_strc'
         input_file = 'chem_prop.tsv'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             print("Generating "+pickle_key+"...")
             pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
                                        dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
-            self.setAttribute(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
         # else:
         #     if not os.path.isfile(dirname+'/cache/'+pickle_key+'.gz'):
         #         print("Generating "+picklename+"...")
@@ -165,25 +165,25 @@ class rpCache:
         picklename = 'chemXref'
         input_file = 'chem_xref.tsv'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             pickle_obj = self.mnx_chemXref(picklename,
                                            dirname+'/input_cache/'+input_file)
-            self.setAttribute(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         picklename = 'chebi_mnxm'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             pickle_obj = self.chebi_xref(picklename,
-                                         self.getAttribute('chemXref'))
-            self.setAttribute(pickle_key, pickle_obj)
+                                         self.getPickle('chemXref'))
+            self.setPickle(pickle_key, pickle_obj)
 
         picklename = 'rr_reactions'
         input_file = 'rules_rall.tsv'
         pickle_key = picklename+'.pickle'
-        if self.getAttribute(pickle_key)==None:
+        if self.getPickle(pickle_key)==None:
             pickle_obj = self.retro_reactions(picklename,
                                               dirname+'/input_cache/'+input_file)
-            self.setAttribute(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         return True
 
@@ -200,10 +200,10 @@ class rpCache:
     #     attribute = pickle.load(open(dirname+'/cache/'+pickle_key, 'rb'))
 
 
-    def getAttribute(self, picklename):
+    def getPickle(self, picklename):
         return pickle.loads(self.redis.get(picklename+'.pickle'))
 
-    def setAttribute(self, attribute, data):
+    def setPickle(self, attribute, data):
         self.redis.set(attribute, data)
 
 
