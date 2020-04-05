@@ -130,7 +130,7 @@ class rpCache:
             pickle_obj = self.deprecatedMNX(picklename,
                                             dirname+'/input_cache/'+input_file)
             self.deprecatedMNXM_mnxm = pickle_obj
-            # self.setPickle(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         # # Choose the method according to store_mode: 'file' or 'redis'
         # method = getattr(self, "_gen_pickle_to_"+self.store_mode)
@@ -143,7 +143,7 @@ class rpCache:
             pickle_obj = self.deprecatedMNX(picklename,
                                             dirname+'/input_cache/'+input_file)
             self.deprecatedMNXR_mnxr = pickle_obj
-            # self.setPickle(pickle_key, pickle_obj)
+            self.setPickle(pickle_key, pickle_obj)
 
         picklename = 'mnxm_strc'
         input_file = 'chem_prop.tsv'
