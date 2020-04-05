@@ -39,8 +39,8 @@ class rpCache:
                             'MNXM145523': 'MNXM57',
                             'MNXM57425': 'MNXM9',
                             'MNXM137': 'MNXM588022'}
-        # self.deprecatedMNXM_mnxm = {}
-        # self.deprecatedMNXR_mnxr = {}
+        self.deprecatedMNXM_mnxm = {}
+        self.deprecatedMNXR_mnxr = {}
         # self.mnxm_strc = None
         # self.chemXref = None
         # self.rr_reactions = None
@@ -127,9 +127,10 @@ class rpCache:
         input_file = 'chem_xref.tsv'
         pickle_key = picklename+'.pickle'
         if self.getPickle(pickle_key)==None:
-            pickle_obj = self.deprecatedMNXM(picklename,
-                                             dirname+'/input_cache/'+input_file)
-            self.setPickle(pickle_key, pickle_obj)
+            pickle_obj = self.deprecatedMNX(picklename,
+                                            dirname+'/input_cache/'+input_file)
+            self.deprecatedMNXM_mnxm = pickle_obj
+            # self.setPickle(pickle_key, pickle_obj)
 
         # # Choose the method according to store_mode: 'file' or 'redis'
         # method = getattr(self, "_gen_pickle_to_"+self.store_mode)
@@ -139,9 +140,10 @@ class rpCache:
         input_file = 'reac_xref.tsv'
         pickle_key = picklename+'.pickle'
         if self.getPickle(pickle_key)==None:
-            pickle_obj = self.deprecatedMNXR(picklename,
-                                             dirname+'/input_cache/'+input_file)
-            self.setPickle(pickle_key, pickle_obj)
+            pickle_obj = self.deprecatedMNX(picklename,
+                                            dirname+'/input_cache/'+input_file)
+            self.deprecatedMNXR_mnxr = pickle_obj
+            # self.setPickle(pickle_key, pickle_obj)
 
         picklename = 'mnxm_strc'
         input_file = 'chem_prop.tsv'
@@ -276,18 +278,32 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return Dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def deprecatedMNXM(self, chem_xref_path):
-        deprecatedMNXM_mnxm = {}
+    # def deprecatedMNXM(self, chem_xref_path):
+    #     deprecatedMNXM_mnxm = {}
+    #     with open(chem_xref_path) as f:
+    #         c = csv.reader(f, delimiter='\t')
+    #         for row in c:
+    #             if not row[0][0]=='#':
+    #                 mnx = row[0].split(':')
+    #                 if mnx[0]=='deprecated':
+    #                     deprecatedMNXM_mnxm[mnx[1]] = row[1]
+    #         deprecatedMNXM_mnxm.update(self.convertMNXM)
+    #         deprecatedMNXM_mnxm['MNXM01'] = 'MNXM1'
+    #     return deprecatedMNXM_mnxm
+
+    def deprecatedMNX(self, deprecated, xref_path):
+        deprecatedMNX_mnx = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
                     mnx = row[0].split(':')
                     if mnx[0]=='deprecated':
-                        deprecatedMNXM_mnxm[mnx[1]] = row[1]
-            deprecatedMNXM_mnxm.update(self.convertMNXM)
-            deprecatedMNXM_mnxm['MNXM01'] = 'MNXM1'
-        return deprecatedMNXM_mnxm
+                        deprecatedMNX_mnx[mnx[1]] = row[1]
+            if (deprecated=='deprecatedMNXM_mnxm'):
+                deprecatedMNX_mnx.update(self.convertMNXM)
+                deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
+        return deprecatedMNX_mnx
 
 
     ## Function to parse the reac_xref.tsv file of MetanetX
@@ -298,16 +314,16 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    def deprecatedMNXR(self, reac_xref_path):
-        deprecatedMNXR_mnxr = {}
-        with open(reac_xref_path) as f:
-            c = csv.reader(f, delimiter='\t')
-            for row in c:
-                if not row[0][0]=='#':
-                    mnx = row[0].split(':')
-                    if mnx[0]=='deprecated':
-                        deprecatedMNXR_mnxr[mnx[1]] = row[1]
-        return deprecatedMNXR_mnxr
+    # def deprecatedMNXR(self, reac_xref_path):
+    #     deprecatedMNXR_mnxr = {}
+    #     with open(reac_xref_path) as f:
+    #         c = csv.reader(f, delimiter='\t')
+    #         for row in c:
+    #             if not row[0][0]=='#':
+    #                 mnx = row[0].split(':')
+    #                 if mnx[0]=='deprecated':
+    #                     deprecatedMNXR_mnxr[mnx[1]] = row[1]
+    #     return deprecatedMNXR_mnxr
 
 
     ## Function to parse the chemp_prop.tsv file from MetanetX and compounds.tsv from RetroRules. Uses the InchIkey as key to the dictionnary
