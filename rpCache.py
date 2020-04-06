@@ -186,13 +186,13 @@ class rpCache:
             sys_stdout.write("\033[0;32m") # Green
             print(" OK")
             sys_stdout.write("\033[0;0m") # Reset
-            # Set attribute to value
-            setattr(self, attribute_name, result)
         except:
             sys_stdout.write("\033[1;31m") # Red
             print(" Failed")
             sys_stdout.write("\033[0;0m") # Reset
             raise
+        # Set attribute to value
+        setattr(self, attribute_name, result)
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
