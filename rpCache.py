@@ -161,7 +161,7 @@ class rpCache:
                 print("Loading "+pickle_key+"...", end = '', flush=True)
                 results = []
                 for i in range(len(pickle_keys)):
-                    results += [self.loadPickle(key, dirname)]
+                    results += [self.loadPickle(pickle_keys[i], dirname)]
             else:
                 print("Generating "+pickle_key+"...", end = '', flush=True)
                 # Choose method according to attribute name
