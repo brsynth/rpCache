@@ -253,7 +253,8 @@ class rpCache:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
-            pickle_obj = getattr(self, '__m_'+picklename)(*args)
+            pickle_obj = self.__m_deprecatedMNXM_mnxm(*args)
+            # pickle_obj = getattr(self, '__m_'+picklename)(*args)
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
             # Set attribute to value
@@ -261,7 +262,7 @@ class rpCache:
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
-    def __getattr__(self, name, args):
+    def __getattr__(self, name):
         return self.name(*args)
 
 
@@ -411,7 +412,7 @@ class rpCache:
                         deprecatedMNX_mnx[mnx[1]] = row[1]
         return deprecatedMNX_mnx
 
-    def __m_deprecatedMNXM(self, chem_xref_path):
+    def __m_deprecatedMNXM_mnxm(self, chem_xref_path):
         deprecatedMNX_mnx = deprecatedMNX(chem_xref_path)
         deprecatedMNX_mnx.update(self.convertMNXM)
         deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
@@ -425,7 +426,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    def __m_deprecatedMNXR(self, reac_xref_path):
+    def __m_deprecatedMNXR_mnxr(self, reac_xref_path):
         return deprecatedMNX(reac_xref_path)
 
 
