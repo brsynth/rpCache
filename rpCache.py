@@ -22,27 +22,25 @@ import redis
 class rpCache:
 
 
-    __attributes = {
-        # Common attribues
-        'convertMNXM': {'MNXM162231': 'MNXM6',
-                        'MNXM84': 'MNXM15',
-                        'MNXM96410': 'MNXM14',
-                        'MNXM114062': 'MNXM3',
-                        'MNXM145523': 'MNXM57',
-                        'MNXM57425': 'MNXM9',
-                        'MNXM137': 'MNXM588022'},
-        'deprecatedMNXM_mnxm': None,
-        'deprecatedMNXR_mnxr': None,
-        'mnxm_strc': None,
-        'chemXref': None,
-        'rr_reactions': None,
-        'chebi_mnxm': None,
+    # Common attribues
+    __convertMNXM = {'MNXM162231': 'MNXM6',
+                     'MNXM84': 'MNXM15',
+                     'MNXM96410': 'MNXM14',
+                     'MNXM114062': 'MNXM3',
+                     'MNXM145523': 'MNXM57',
+                     'MNXM57425': 'MNXM9',
+                     'MNXM137': 'MNXM588022'}
+    __deprecatedMNXM_mnxm = None
+    __deprecatedMNXR_mnxr = None
+    __mnxm_strc = None
+    __chemXref = None
+    __rr_reactions = None
+    __chebi_mnxm = None
 
-        # rpReader attributes
-        'inchikey_mnxm': None,
-        'compXref': None,
-        'nameCompXref': None
-    }
+    # rpReader attributes
+    __inchikey_mnxm = None
+    __compXref = None
+    __nameCompXref = None
 
     ## Cache constructor
     #
@@ -249,17 +247,17 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        if not self.__attributes[picklename]:
+        if not self.__dict__[picklename]:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
             # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
-            pickle_obj = getattr(self, '__m_'+picklename)(*args[1:])
+            pickle_obj = self.__dict__['__m_'+picklename](*args[1:])
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
             # Set attribute to value
             exit()
-            setattr(self, __attributes[picklename], pickle_obj)
+            setattr(self, __dict__[picklename], pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
@@ -359,7 +357,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXMdeprecated(self, mnxm):
         try:
-            return __attributes['deprecatedMNXM_mnxm'][mnxm]
+            return self.__deprecatedMNXM_mnxm[mnxm]
         except KeyError:
             return mnxm
 
@@ -369,7 +367,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXRdeprecated(self, mnxr):
         try:
-            return __attributes['deprecatedMNXR_mnxr'][mnxr]
+            return self.__deprecatedMNXR_mnxr[mnxr]
         except KeyError:
             return mnxr
 
