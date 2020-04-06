@@ -265,6 +265,7 @@ class rpCache:
             self.storePickle(pickle_key, pickle_obj, dirname)
 
     def __getattr__(self, name, args):
+        print(name, *args)
         return self.name(*args)
 
 
