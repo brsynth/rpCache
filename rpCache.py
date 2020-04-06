@@ -413,7 +413,7 @@ class rpCache:
         return deprecatedMNX_mnx
 
     def __m_deprecatedMNXM_mnxm(self, chem_xref_path):
-        deprecatedMNX_mnx = __m_deprecatedMNX(chem_xref_path)
+        deprecatedMNX_mnx = self.__m_deprecatedMNX(chem_xref_path)
         deprecatedMNX_mnx.update(self.convertMNXM)
         deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
         return deprecatedMNX_mnx
