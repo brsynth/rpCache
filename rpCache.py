@@ -142,7 +142,7 @@ class rpCache:
             'deprecatedMNXR_mnxr': [input_cache+'reac_xref.tsv'],
             'mnxm_strc': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv'],
             'chemXref': [input_cache+'chem_xref.tsv'],
-            'chebi_mnxm': [self.getPickle('chemXref')],
+            'chebi_mnxm': [self._chemXref],
             'rr_reactions': [input_cache+'rules_rall.tsv'],
             'inchikey_mnxm': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv']
         }
