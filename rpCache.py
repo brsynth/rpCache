@@ -168,7 +168,7 @@ class rpCache:
                 # Apply method and expand 'args' list as arguments
                 # Put results in a list
                 results = method(*args[1:])
-                for i in len(results):
+                for i in range(len(results)):
                     # Store pickle
                     self.storePickle(pickle_keys[i], results[i], dirname)
             sys_stdout.write("\033[0;32m") # Green
