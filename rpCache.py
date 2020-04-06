@@ -151,15 +151,35 @@ class rpCache:
             self.processPickle(dirname, [picklename, *inputs[picklename]])
 
         picklename = 'compXref'
-        # Non-initialized?
-        if getattr(self, '_'+picklename)==None:
-            print("Generating "+pickle_key+"...")
-            pickle_key = picklename+'.pickle'
-            name_pubDB_xref, compName_mnxc = self.mnx_compXref(dirname+'/input_cache/comp_xref.tsv')
-            pickle_obj = pickle.dumps(name_pubDB_xref)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-            pickle_obj = pickle.dumps(compName_mnxc)
-            self.storePickle('name'+pickle_key, pickle_obj, dirname)
+        pickle_key = picklename+'.pickle'
+        pickles_keys = [pickle_key, 'name'+pickle_key]
+        try:
+            # Check if attribute 'picklename' is set
+            if self.checkPickle(pickle_key, dirname):
+                print("Loading "+pickle_key+"...", end = '', flush=True)
+                for key in pickles:
+                    pickles[key] = self.loadPickle(key, dirname)
+            else:
+                print("Generating "+pickle_key+"...", end = '', flush=True)
+                # Choose method according to attribute name
+                method = getattr(self, '_m'+attribute_name)
+                # Apply method and expand 'args' list as arguments
+                # Put results in a list
+                results = method(*args[1:])
+                for i in len(results):
+                    # Store pickle
+                    self.storePickle(pickle_keys[i], results[i], dirname)
+            sys_stdout.write("\033[0;32m") # Green
+            print(" OK")
+            sys_stdout.write("\033[0;0m") # Reset
+        except:
+            sys_stdout.write("\033[1;31m") # Red
+            print(" Failed")
+            sys_stdout.write("\033[0;0m") # Reset
+            raise
+        # Set attribute to value
+        for i in len(results):
+            setattr(self, '_'+pickle_keys[i], results[i])
 
         return True
 
