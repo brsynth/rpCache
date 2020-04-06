@@ -37,24 +37,24 @@ class rpCache:
         self.logger.info('Started instance of rpCache')
 
         # Common attribues
-        self.__convertMNXM = {'MNXM162231': 'MNXM6',
+        self._convertMNXM = {'MNXM162231': 'MNXM6',
                          'MNXM84': 'MNXM15',
                          'MNXM96410': 'MNXM14',
                          'MNXM114062': 'MNXM3',
                          'MNXM145523': 'MNXM57',
                          'MNXM57425': 'MNXM9',
                          'MNXM137': 'MNXM588022'}
-        self.__deprecatedMNXM_mnxm = None
-        self.__deprecatedMNXR_mnxr = None
-        self.__mnxm_strc = None
-        self.__chemXref = None
-        self.__rr_reactions = None
-        self.__chebi_mnxm = None
+        self._deprecatedMNXM_mnxm = None
+        self._deprecatedMNXR_mnxr = None
+        self._mnxm_strc = None
+        self._chemXref = None
+        self._rr_reactions = None
+        self._chebi_mnxm = None
 
         # rpReader attributes
-        self.__inchikey_mnxm = None
-        self.__compXref = None
-        self.__nameCompXref = None
+        self._inchikey_mnxm = None
+        self._compXref = None
+        self._nameCompXref = None
 
 
     #####################################################
@@ -247,15 +247,15 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        attribute = self.__dict__['_'+type(self).__name__+'__'+picklename]
+        attribute = getattr(self, '_'+picklename)
         # Check if attribute 'picklename' is set
         if not attribute:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
             # Choose method according to attribute name
-            method = '__m_'+picklename
-            pickle_obj = self.__getattr__(method, args[1:])
+            method = getattr(self, '_m_'+picklename)
+            pickle_obj = method(*args[1:])
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
             # Set attribute to value
@@ -264,9 +264,9 @@ class rpCache:
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
-    def __getattr__(self, name, args):
-        print(name, *args)
-        return self.name(*args)
+    # def __getattr__(self, name, args):
+    #     print(name, *args)
+    #     return self.name(*args)
 
 
     def storePickle(pickle_key, pickle_obj, dirname='./', gzip=False):
@@ -330,7 +330,7 @@ class rpCache:
     #  @param itype type of depiction provided as input, str
     #  @param otype types of depiction to be generated, {"", "", ..}
     #  @return odepic generated depictions, {"otype1": "odepic1", ..}
-    def __convert_depiction(self, idepic, itype='smiles', otype={'inchikey'}):
+    def _convert_depiction(self, idepic, itype='smiles', otype={'inchikey'}):
         # Import (if needed)
         if itype == 'smiles':
             rdmol = MolFromSmiles(idepic, sanitize=True)
@@ -359,9 +359,9 @@ class rpCache:
     #  Generate a one-to-one dictionnary of old id's to new ones. Private function
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
-    def __checkMNXMdeprecated(self, mnxm):
+    def _checkMNXMdeprecated(self, mnxm):
         try:
-            return self.__deprecatedMNXM_mnxm[mnxm]
+            return self._deprecatedMNXM_mnxm[mnxm]
         except KeyError:
             return mnxm
 
@@ -369,9 +369,9 @@ class rpCache:
     ## Function to create a dictionnary of old to new reaction id's
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
-    def __checkMNXRdeprecated(self, mnxr):
+    def _checkMNXRdeprecated(self, mnxr):
         try:
-            return self.__deprecatedMNXR_mnxr[mnxr]
+            return self._deprecatedMNXR_mnxr[mnxr]
         except KeyError:
             return mnxr
 
@@ -404,7 +404,7 @@ class rpCache:
     #         deprecatedMNXM_mnxm['MNXM01'] = 'MNXM1'
     #     return deprecatedMNXM_mnxm
 
-    def __m_deprecatedMNX(self, xref_path):
+    def _m_deprecatedMNX(self, xref_path):
         deprecatedMNX_mnx = {}
         with open(xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -415,9 +415,9 @@ class rpCache:
                         deprecatedMNX_mnx[mnx[1]] = row[1]
         return deprecatedMNX_mnx
 
-    def __m_deprecatedMNXM_mnxm(self, chem_xref_path):
-        deprecatedMNX_mnx = self.__m_deprecatedMNX(chem_xref_path)
-        deprecatedMNX_mnx.update(self.__attributes['convertMNXM'])
+    def _m_deprecatedMNXM_mnxm(self, chem_xref_path):
+        deprecatedMNX_mnx = self._m_deprecatedMNX(chem_xref_path)
+        deprecatedMNX_mnx.update(self._convertMNXM)
         deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
         return deprecatedMNX_mnx
 
@@ -429,7 +429,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    def __m_deprecatedMNXR_mnxr(self, reac_xref_path):
+    def _m_deprecatedMNXR_mnxr(self, reac_xref_path):
         return deprecatedMNX(reac_xref_path)
 
 
@@ -440,14 +440,14 @@ class rpCache:
     #  @param self Object pointer
     #  @param chem_prop_path Input file path
     #  @return mnxm_strc Dictionnary of formula, smiles, inchi and inchikey
-    def __m_mnx_strc(self, rr_compounds_path, chem_prop_path):
+    def _m_mnx_strc(self, rr_compounds_path, chem_prop_path):
         mnxm_strc = {}
         for row in csv.DictReader(open(rr_compounds_path), delimiter='\t'):
             tmp = {'formula':  None,
                     'smiles': None,
                     'inchi': row['inchi'],
                     'inchikey': None,
-                    'mnxm': self.__checkMNXMdeprecated(row['cid']),
+                    'mnxm': self._checkMNXMdeprecated(row['cid']),
                     'name': None}
             try:
                 resConv = self._convert_depiction(idepic=tmp['inchi'], itype='inchi', otype={'smiles','inchikey'})
@@ -461,7 +461,7 @@ class rpCache:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
-                    mnxm = self.__checkMNXMdeprecated(row[0])
+                    mnxm = self._checkMNXMdeprecated(row[0])
                     tmp = {'formula':  row[2],
                             'smiles': row[6],
                             'inchi': row[5],
@@ -520,7 +520,7 @@ class rpCache:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
-                    mnx = self.__checkMNXMdeprecated(row[1])
+                    mnx = self._checkMNXMdeprecated(row[1])
                     if len(row[0].split(':'))==1:
                         dbName = 'mnx'
                         dbId = row[0]
@@ -552,7 +552,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def __m_chebi_xref(self, chemXref):
+    def _m_chebi_xref(self, chemXref):
         chebi_mnxm = {}
         for mnxm in chemXref:
             if 'chebi' in chemXref[mnxm]:
@@ -568,7 +568,7 @@ class rpCache:
     #  @param self The object pointer.
     #  @param path The input file path.
     #  @return rule Dictionnary describing each reaction rule
-    def __m_retro_reactions(self, rules_rall_path):
+    def _m_retro_reactions(self, rules_rall_path):
         try:
             #with open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
@@ -582,7 +582,7 @@ class rpCache:
                 #WARNING: can have multiple products so need to seperate them
                 products = {}
                 for i in row['Product_IDs'].split('.'):
-                    mnxm = self.__checkMNXMdeprecated(i)
+                    mnxm = self._checkMNXMdeprecated(i)
                     if not mnxm in products:
                         products[mnxm] = 1
                     else:
@@ -613,7 +613,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def __m_mnx_compXref(self, compXref_path):
+    def _m_mnx_compXref(self, compXref_path):
         name_pubDB_xref = {}
         compName_mnxc = {}
         try:
