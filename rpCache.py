@@ -166,7 +166,7 @@ class rpCache:
                 method = getattr(self, '_m'+attribute_name)
                 # Apply method and expand 'args' list as arguments
                 # Put results in a list
-                results = method(*args[1:])
+                results = method(*[])
                 for i in len(results):
                     # Store pickle
                     self.storePickle(pickle_keys[i], results[i], dirname)
