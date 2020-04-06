@@ -270,9 +270,9 @@ class rpCache:
         picklename = args[0]
         pickle_key = picklename+'.pickle'
         # Check if attribute 'picklename' is set
-        if checkPickle(pickle_key, dirname):
+        if self.checkPickle(pickle_key, dirname):
             print("Loading "+pickle_key+"...", end = '')
-            result = loadPickle(pickle_key, dirname)
+            result = self.loadPickle(pickle_key, dirname)
             print("\033[1;32;40m OK")
         else:
             print("Generating "+pickle_key+"...", end = '')
