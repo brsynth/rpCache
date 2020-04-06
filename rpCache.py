@@ -133,21 +133,21 @@ class rpCache:
 
         ###################### Populate the cache #################################
 
-        # picklename = 'deprecatedMNXM_mnxm'
-        # input_file = 'chem_xref.tsv'
-        # args = [picklename, dirname+'/input_cache/'+input_file]
-        # self.processPickle(args)
-
         picklename = 'deprecatedMNXM_mnxm'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'chem_xref.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.deprecatedMNX(picklename,
-                                            dirname+'/input_cache/'+input_file)
-            self.deprecatedMNXM_mnxm = pickle_obj
-            self.dumpPickle(pickle_key, pickle_obj, dirname)
+        input_file = 'chem_xref.tsv'
+        args = [picklename, dirname+'/input_cache/'+input_file]
+        self.processPickle(args)
+
+        # picklename = 'deprecatedMNXM_mnxm'
+        # # Non-initialized?
+        # if getattr(self, picklename)==None:
+        #     print("Generating "+pickle_key+"...")
+        #     input_file = 'chem_xref.tsv'
+        #     pickle_key = picklename+'.pickle'
+        #     pickle_obj = self.deprecatedMNX(picklename,
+        #                                     dirname+'/input_cache/'+input_file)
+        #     self.deprecatedMNXM_mnxm = pickle_obj
+        #     self.dumpPickle(pickle_key, pickle_obj, dirname)
 
 
         # # Choose the method according to store_mode: 'file' or 'redis'
