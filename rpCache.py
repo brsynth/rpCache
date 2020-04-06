@@ -247,7 +247,7 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        if not self.__dict__[picklename]:
+        if not self.__dict__['__'+picklename]:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
@@ -257,7 +257,7 @@ class rpCache:
             # pickle_obj = method(args)
             # Set attribute to value
             exit()
-            setattr(self, __dict__[picklename], pickle_obj)
+            setattr(self, __dict__['__'+picklename], pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
