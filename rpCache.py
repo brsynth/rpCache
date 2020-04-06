@@ -270,19 +270,12 @@ class rpCache:
     def processPickle(self, dirname, args):
         picklename = args[0]
         pickle_key = picklename+'.pickle'
-        # Check if attribute 'picklename' is set
-        if self.checkPickle(pickle_key, dirname):
-            try:
+        try:
+            # Check if attribute 'picklename' is set
+            if self.checkPickle(pickle_key, dirname):
                 print("Loading "+pickle_key+"...", end = '')
                 result = self.loadPickle(pickle_key, dirname)
-                sys_stdout.write("\033[0;32m") # Green
-                print(" OK")
-            except:
-                sys_stdout.write("\033[1;31m") # Green
-                print(" Failed")
-            sys_stdout.write("\033[0;0m") # Reset
-        else:
-            try:
+            else:
                 print("Generating "+pickle_key+"...", end = '')
                 attribute_name = '_'+picklename
                 # Choose method according to attribute name
@@ -291,14 +284,14 @@ class rpCache:
                 result = method(*args[1:])
                 # Store pickle
                 self.storePickle(pickle_key, result, dirname)
-                sys_stdout.write("\033[0;32m") # Green
-                print(" OK")
-            except:
-                sys_stdout.write("\033[1;31m") # Green
-                print(" Failed")
-            sys_stdout.write("\033[0;0m") # Reset
-        # Set attribute to value
-        setattr(self, attribute_name, result)
+            sys_stdout.write("\033[0;32m") # Green
+            print(" OK")
+            # Set attribute to value
+            setattr(self, attribute_name, result)
+        except:
+            sys_stdout.write("\033[1;31m") # Green
+            print(" Failed")
+        sys_stdout.write("\033[0;0m") # Reset
 
     # def __getattr__(self, name, args):
     #     print(name, *args)
