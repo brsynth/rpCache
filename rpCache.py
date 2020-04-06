@@ -255,7 +255,7 @@ class rpCache:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
-            pickle_obj = method(*args[1:])
+            pickle_obj = self.__getattr__(method)(*args[1:])
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
             # Set attribute to value
