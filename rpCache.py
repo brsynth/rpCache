@@ -168,6 +168,7 @@ class rpCache:
 
     def processPickle(self, dirname, args):
         picklename = args[0]
+        attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
         try:
             # Check if attribute 'picklename' is set
@@ -176,7 +177,6 @@ class rpCache:
                 result = self.loadPickle(pickle_key, dirname)
             else:
                 print("Generating "+pickle_key+"...", end = '')
-                attribute_name = '_'+picklename
                 # Choose method according to attribute name
                 method = getattr(self, '_m'+attribute_name)
                 # Apply method and expand 'args' list as arguments
