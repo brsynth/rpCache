@@ -153,7 +153,7 @@ class rpCache:
         picklename = 'compXref'
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
-        pickles_keys = [pickle_key, 'name'+pickle_key]
+        pickle_keys = [pickle_key, 'name'+pickle_key]
         args = [picklename, input_cache+'/comp_xref.tsv']
         try:
             # Check if attribute 'picklename' is set
