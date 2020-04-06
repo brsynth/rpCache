@@ -144,11 +144,19 @@ class rpCache:
             'chemXref': [input_cache+'chem_xref.tsv'],
             'chebi_mnxm': [],
             'rr_reactions': [input_cache+'rules_rall.tsv'],
-            'inchikey_mnxm': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv']
+            'inchikey_mnxm': []
         }
 
         for picklename in inputs:
             self.processPickle(dirname, [picklename, *inputs[picklename]])
+
+        if not os.path.isfile(dirname+'/cache/inchikey_mnxm.pickle.gz'):
+            inchikey_mnxm = {}
+            for mnxm in self.mnxm_strc:
+                if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
+                    inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
+                inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
+            pickle.dump(inchikey_mnxm, gzip.open(dirname+'/cache/inchikey_mnxm.pickle.gz','wb'))
 
         picklename = 'compXref'
         # Non-initialized?
@@ -540,6 +548,14 @@ class rpCache:
                 return {}
         return rule
 
+
+    def _m_inchikey_mnxm(self):
+        inchikey_mnxm = {}
+        for mnxm in self._mnxm_strc:
+            if not self._mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
+                inchikey_mnxm[self._mnxm_strc[mnxm]['inchikey']] = []
+            inchikey_mnxm[self._mnxm_strc[mnxm]['inchikey']].append(mnxm)
+        return inchikey_mnxm
 
     # rpReader
     ## Function to parse the compXref.tsv file of MetanetX
