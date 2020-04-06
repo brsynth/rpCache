@@ -20,6 +20,29 @@ import redis
 # Contains all the functions that parse different files, used to calculate the thermodynamics and the FBA of the
 #the other steps. These should be called only when the files have changes
 class rpCache:
+
+
+    # Common properties
+    __convertMNXM = {'MNXM162231': 'MNXM6',
+                     'MNXM84': 'MNXM15',
+                     'MNXM96410': 'MNXM14',
+                     'MNXM114062': 'MNXM3',
+                     'MNXM145523': 'MNXM57',
+                     'MNXM57425': 'MNXM9',
+                     'MNXM137': 'MNXM588022'}
+    __deprecatedMNXM_mnxm = None
+    __deprecatedMNXR_mnxr = None
+    __mnxm_strc = None
+    __chemXref = None
+    __rr_reactions = None
+    __chebi_mnxm = None
+
+    # rpReader attributes
+    __inchikey_mnxm = None
+    __compXref = None
+    __nameCompXref = None
+
+
     ## Cache constructor
     #
     # @param self The object pointer
@@ -34,25 +57,6 @@ class rpCache:
         self.logger.info('Started instance of rpCache')
 
 
-        # Common properties
-        self.__convertMNXM = {'MNXM162231': 'MNXM6',
-                              'MNXM84': 'MNXM15',
-                              'MNXM96410': 'MNXM14',
-                              'MNXM114062': 'MNXM3',
-                              'MNXM145523': 'MNXM57',
-                              'MNXM57425': 'MNXM9',
-                              'MNXM137': 'MNXM588022'}
-        self.__deprecatedMNXM_mnxm = None
-        self.__deprecatedMNXR_mnxr = None
-        self.__mnxm_strc = None
-        self.__chemXref = None
-        self.__rr_reactions = None
-        self.__chebi_mnxm = None
-
-        # rpReader attributes
-        self.__inchikey_mnxm = None
-        self.__compXref = None
-        self.__nameCompXref = None
 
     #####################################################
     ################# ERROR functions ###################
