@@ -347,7 +347,7 @@ class rpCache:
 
     def checkPickle(self, pickle_key, dirname):
         if self.store_mode=='redis':
-            return self.exists(pickle_key)
+            return self.redis.exists(pickle_key)
         else:
             return os.path.isfile(dirname+'/input_cache/'+pickle_key)
 
