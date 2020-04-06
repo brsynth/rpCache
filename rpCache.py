@@ -150,14 +150,6 @@ class rpCache:
         for picklename in inputs:
             self.processPickle(dirname, [picklename, *inputs[picklename]])
 
-        if not os.path.isfile(dirname+'/cache/inchikey_mnxm.pickle.gz'):
-            inchikey_mnxm = {}
-            for mnxm in self.mnxm_strc:
-                if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
-                    inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
-                inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
-            pickle.dump(inchikey_mnxm, gzip.open(dirname+'/cache/inchikey_mnxm.pickle.gz','wb'))
-
         picklename = 'compXref'
         # Non-initialized?
         if getattr(self, '_'+picklename)==None:
