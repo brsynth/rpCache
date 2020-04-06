@@ -180,7 +180,7 @@ class rpCache:
             sys_stdout.write("\033[0;0m") # Reset
             raise
         # Set attribute to value
-        for i in len(results):
+        for i in range(len(results)):
             setattr(self, '_'+pickle_keys[i], results[i])
 
         return True
