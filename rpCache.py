@@ -257,9 +257,9 @@ class rpCache:
             # Apply method and expand 'args' list as arguments
             pickle_obj = method(**args)
             # Set attribute to value
-            setattr(self, picklename, pickle_obj)
+            setattr(self, __properties[picklename], pickle_obj)
             # Dump pickle
-            self.dumpPickle(pickle_key, pickle_obj, dirname)
+            self.storePickle(pickle_key, pickle_obj, dirname)
 
 
     def storePickle(pickle_key, pickle_obj, dirname='./', gzip=False):
@@ -354,7 +354,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXMdeprecated(self, mnxm):
         try:
-            return self.__deprecatedMNXM_mnxm[mnxm]
+            return __properties['deprecatedMNXM_mnxm'][mnxm]
         except KeyError:
             return mnxm
 
@@ -364,7 +364,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXRdeprecated(self, mnxr):
         try:
-            return self.__deprecatedMNXR_mnxr[mnxr]
+            return __properties['deprecatedMNXR_mnxr'][mnxr]
         except KeyError:
             return mnxr
 
@@ -440,7 +440,7 @@ class rpCache:
                     'smiles': None,
                     'inchi': row['inchi'],
                     'inchikey': None,
-                    'mnxm': self._checkMNXMdeprecated(row['cid']),
+                    'mnxm': self.__checkMNXMdeprecated(row['cid']),
                     'name': None}
             try:
                 resConv = self._convert_depiction(idepic=tmp['inchi'], itype='inchi', otype={'smiles','inchikey'})
@@ -454,7 +454,7 @@ class rpCache:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
-                    mnxm = self._checkMNXMdeprecated(row[0])
+                    mnxm = self.__checkMNXMdeprecated(row[0])
                     tmp = {'formula':  row[2],
                             'smiles': row[6],
                             'inchi': row[5],
