@@ -289,7 +289,7 @@ class rpCache:
             pickle.dump(data, open(filename, 'wb'))
 
     def storePickleToDB(self, attribute, data):
-        self.redis.set(attribute, pickle.dump(data))
+        self.redis.set(attribute, pickle.dumps(data))
 
     def loadPickleFromFile(self, pickle_key, dirname, gzip=False):
         filename = dirname+'/cache/'+pickle_key
