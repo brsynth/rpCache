@@ -252,7 +252,7 @@ class rpCache:
             # Apply method and expand 'args' list as arguments
             pickle_obj = method(**args)
             # Set attribute to value
-            getattr(self, picklename) = pickle_obj
+            setattr(self, picklename, pickle_obj)
             # Dump pickle
             self.dumpPickle(pickle_key, pickle_obj, dirname)
 
