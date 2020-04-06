@@ -459,7 +459,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param chem_prop_path Input file path
     #  @return mnxm_strc Dictionnary of formula, smiles, inchi and inchikey
-    def _m_mnx_strc(self, rr_compounds_path, chem_prop_path):
+    def _m_mnxm_strc(self, rr_compounds_path, chem_prop_path):
         mnxm_strc = {}
         for row in csv.DictReader(open(rr_compounds_path), delimiter='\t'):
             tmp = {'formula':  None,
