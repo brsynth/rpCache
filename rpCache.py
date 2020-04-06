@@ -250,8 +250,8 @@ class rpCache:
     def processPickle(self, args):
         picklename = args[0]
         if not self.__properties[picklename]:
-            print("Generating "+pickle_key+"...")
             pickle_key = picklename+'.pickle'
+            print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
             method = '__m_'+picklename
             # Apply method and expand 'args' list as arguments
