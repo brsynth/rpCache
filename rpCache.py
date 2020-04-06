@@ -247,14 +247,14 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        # Choose method according to attribute name
-        method = '_'+type(self).__name__+'__'+picklename
-        attribute = self.__dict__[method]
+        attribute = self.__dict__['_'+type(self).__name__+'__'+picklename]
         # Check if attribute 'picklename' is set
         if not attribute:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
+            # Choose method according to attribute name
+            method = '__m_'+picklename
             pickle_obj = self.__getattr__(method, args[1:])
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
