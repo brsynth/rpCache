@@ -449,7 +449,7 @@ class rpCache:
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
     def _m_deprecatedMNXR_mnxr(self, reac_xref_path):
-        return _deprecatedMNX(reac_xref_path)
+        return self._deprecatedMNX(reac_xref_path)
 
 
     ## Function to parse the chemp_prop.tsv file from MetanetX and compounds.tsv from RetroRules. Uses the InchIkey as key to the dictionnary
