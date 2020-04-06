@@ -247,7 +247,7 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        attribute = self.__dict__['_'+type(rpcache).__name__+picklename]
+        attribute = self.__dict__['_'+type(rpcache).__name__+'__'+picklename]
         # Check if attribute 'picklename' is set
         if not attribute:
             pickle_key = picklename+'.pickle'
