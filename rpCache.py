@@ -193,7 +193,6 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute_name, result)
-        print(self._chemXref)
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
@@ -222,9 +221,9 @@ class rpCache:
 
     def loadPickle(self, pickle_key, dirname='./', gzip=False):
         if self.store_mode=='redis':
-            self.loadPickleFromDB(pickle_key)
+            return self.loadPickleFromDB(pickle_key)
         else:
-            self.loadPickleFromFile(pickle_key, dirname)
+            return self.loadPickleFromFile(pickle_key, dirname)
 
     def loadPickleFromFile(self, pickle_key, dirname, gzip=False):
         filename = dirname+'/cache/'+pickle_key
