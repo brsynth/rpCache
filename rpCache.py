@@ -159,8 +159,8 @@ class rpCache:
             # Check if attribute 'picklename' is set
             if self.checkPickle(pickle_key, dirname):
                 print("Loading "+pickle_key+"...", end = '', flush=True)
-                for key in pickles:
-                    pickles[key] = self.loadPickle(key, dirname)
+                for key in pickle_keys:
+                    pickle_keys[key] = self.loadPickle(key, dirname)
             else:
                 print("Generating "+pickle_key+"...", end = '', flush=True)
                 # Choose method according to attribute name
