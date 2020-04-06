@@ -142,7 +142,7 @@ class rpCache:
             'deprecatedMNXR_mnxr': [input_cache+'reac_xref.tsv'],
             'mnxm_strc': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv'],
             'chemXref': [input_cache+'chem_xref.tsv'],
-            'chebi_mnxm': [self._chemXref],
+            'chebi_mnxm': [],
             'rr_reactions': [input_cache+'rules_rall.tsv'],
             'inchikey_mnxm': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv']
         }
@@ -487,11 +487,12 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _m_chebi_mnxm(self, chemXref):
+#    def _m_chebi_mnxm(self, chemXref):
+    def _m_chebi_mnxm(self):
         chebi_mnxm = {}
-        for mnxm in chemXref:
-            if 'chebi' in chemXref[mnxm]:
-                for c in chemXref[mnxm]['chebi']:
+        for mnxm in self._chemXref:
+            if 'chebi' in self._chemXref[mnxm]:
+                for c in self._chemXref[mnxm]['chebi']:
                     chebi_mnxm[c] = mnxm
         return chebi_mnxm
 
