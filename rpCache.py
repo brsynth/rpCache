@@ -253,7 +253,7 @@ class rpCache:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
-            method = dir(self, attribute)
+            method = dir(self)[attribute]
             # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
             pickle_obj = method(*args[1:])
             # Apply method and expand 'args' list as arguments
