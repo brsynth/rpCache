@@ -22,8 +22,8 @@ import redis
 class rpCache:
 
 
-    __properties = {
-        # Common properties
+    __attributes = {
+        # Common attribues
         'convertMNXM': {'MNXM162231': 'MNXM6',
                         'MNXM84': 'MNXM15',
                         'MNXM96410': 'MNXM14',
@@ -249,7 +249,7 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        if not self.__properties[picklename]:
+        if not self.__attributes[picklename]:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
@@ -258,7 +258,7 @@ class rpCache:
             # Apply method and expand 'args' list as arguments
             # pickle_obj = method(args)
             # Set attribute to value
-            setattr(self, __properties[picklename], pickle_obj)
+            setattr(self, __attributes[picklename], pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
@@ -358,7 +358,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXMdeprecated(self, mnxm):
         try:
-            return __properties['deprecatedMNXM_mnxm'][mnxm]
+            return __attributes['deprecatedMNXM_mnxm'][mnxm]
         except KeyError:
             return mnxm
 
@@ -368,7 +368,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def __checkMNXRdeprecated(self, mnxr):
         try:
-            return __properties['deprecatedMNXR_mnxr'][mnxr]
+            return __attributes['deprecatedMNXR_mnxr'][mnxr]
         except KeyError:
             return mnxr
 
@@ -414,7 +414,7 @@ class rpCache:
 
     def __m_deprecatedMNXM_mnxm(self, chem_xref_path):
         deprecatedMNX_mnx = self.__m_deprecatedMNX(chem_xref_path)
-        deprecatedMNX_mnx.update(self.__properties['convertMNXM'])
+        deprecatedMNX_mnx.update(self.__attributes['convertMNXM'])
         deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
         return deprecatedMNX_mnx
 
