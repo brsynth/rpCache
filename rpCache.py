@@ -252,14 +252,15 @@ class rpCache:
         if not self.__properties[picklename]:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
-            # Choose method according to attribute name
-            method = getattr(self, '__m_'+picklename)
-            # Apply method and expand 'args' list as arguments
-            pickle_obj = method(*args)
+            # Call generic method and expand 'args' list as arguments
+            pickle_obj = self.'__m_'+picklename(args)
             # Set attribute to value
             setattr(self, __properties[picklename], pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
+
+    def __getattr__(self, name, args):
+        return self.name(*args)
 
 
     def storePickle(pickle_key, pickle_obj, dirname='./', gzip=False):
