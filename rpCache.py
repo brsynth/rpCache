@@ -487,7 +487,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _m_chebi_xref(self, chemXref):
+    def _m_chebi_mnxm(self, chemXref):
         chebi_mnxm = {}
         for mnxm in chemXref:
             if 'chebi' in chemXref[mnxm]:
