@@ -533,7 +533,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def __m_mnx_chemXref(self, chem_xref_path):
+    def _m_chemXref(self, chem_xref_path):
         chemXref = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
@@ -623,6 +623,7 @@ class rpCache:
                 return {}
         return rule
 
+
     # rpReader
     ## Function to parse the compXref.tsv file of MetanetX
     #
@@ -632,7 +633,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def _m_mnx_compXref(self, compXref_path):
+    def _m_compXref(self, compXref_path):
         name_pubDB_xref = {}
         compName_mnxc = {}
         try:
