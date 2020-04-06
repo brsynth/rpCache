@@ -139,7 +139,7 @@ class rpCache:
         picklename = 'deprecatedMNXM_mnxm'
         input_file = 'chem_xref.tsv'
         args = [picklename, dirname+'/input_cache/'+input_file]
-        self.processPickle(args)
+        self.processPickle(dirname, args)
 
         # picklename = 'deprecatedMNXM_mnxm'
         # # Non-initialized?
@@ -245,7 +245,7 @@ class rpCache:
 
 
 
-    def processPickle(self, args):
+    def processPickle(self, dirname, args):
         picklename = args[0]
         attribute_name = '_'+picklename
         attribute = getattr(self, attribute_name)
