@@ -22,26 +22,27 @@ import redis
 class rpCache:
 
 
-    # Common properties
-    __convertMNXM = {'MNXM162231': 'MNXM6',
-                     'MNXM84': 'MNXM15',
-                     'MNXM96410': 'MNXM14',
-                     'MNXM114062': 'MNXM3',
-                     'MNXM145523': 'MNXM57',
-                     'MNXM57425': 'MNXM9',
-                     'MNXM137': 'MNXM588022'}
-    __deprecatedMNXM_mnxm = None
-    __deprecatedMNXR_mnxr = None
-    __mnxm_strc = None
-    __chemXref = None
-    __rr_reactions = None
-    __chebi_mnxm = None
+    __properties = {
+        # Common properties
+        'convertMNXM': {'MNXM162231': 'MNXM6',
+                        'MNXM84': 'MNXM15',
+                        'MNXM96410': 'MNXM14',
+                        'MNXM114062': 'MNXM3',
+                        'MNXM145523': 'MNXM57',
+                        'MNXM57425': 'MNXM9',
+                        'MNXM137': 'MNXM588022'}
+        'deprecatedMNXM_mnxm': None
+        'deprecatedMNXR_mnxr': None
+        'mnxm_strc': None
+        'chemXref': None
+        'rr_reactions': None
+        'chebi_mnxm': None
 
-    # rpReader attributes
-    __inchikey_mnxm = None
-    __compXref = None
-    __nameCompXref = None
-
+        # rpReader attributes
+        'inchikey_mnxm': None
+        'compXref': None
+        'nameCompXref': None
+    }
 
     ## Cache constructor
     #
@@ -247,12 +248,12 @@ class rpCache:
 
 
     def processPickle(self, args):
-        picklename = '__'+args[0]
+        picklename = args[0]
         if getattr(self, picklename)==None:
             print("Generating "+pickle_key+"...")
             pickle_key = picklename+'.pickle'
             # Choose method according to attribute name
-            method = '__m_'+args[0]
+            method = '__m_'+picklename
             # Apply method and expand 'args' list as arguments
             pickle_obj = method(**args)
             # Set attribute to value
