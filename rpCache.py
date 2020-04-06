@@ -32,19 +32,27 @@ class rpCache:
         #given by Thomas
         self.logger = logging.getLogger(__name__)
         self.logger.info('Started instance of rpCache')
-        self.convertMNXM = {'MNXM162231': 'MNXM6',
-                            'MNXM84': 'MNXM15',
-                            'MNXM96410': 'MNXM14',
-                            'MNXM114062': 'MNXM3',
-                            'MNXM145523': 'MNXM57',
-                            'MNXM57425': 'MNXM9',
-                            'MNXM137': 'MNXM588022'}
-        self.deprecatedMNXM_mnxm = {}
-        self.deprecatedMNXR_mnxr = {}
-        # self.mnxm_strc = None
-        # self.chemXref = None
-        # self.rr_reactions = None
-        # self.chebi_mnxm = None
+
+
+        # Common properties
+        self.__convertMNXM = {'MNXM162231': 'MNXM6',
+                              'MNXM84': 'MNXM15',
+                              'MNXM96410': 'MNXM14',
+                              'MNXM114062': 'MNXM3',
+                              'MNXM145523': 'MNXM57',
+                              'MNXM57425': 'MNXM9',
+                              'MNXM137': 'MNXM588022'}
+        self.__deprecatedMNXM_mnxm = None
+        self.__deprecatedMNXR_mnxr = None
+        self.__mnxm_strc = None
+        self.__chemXref = None
+        self.__rr_reactions = None
+        self.__chebi_mnxm = None
+
+        # rpReader attributes
+        self.__inchikey_mnxm = None
+        self.__compXref = None
+        self.__nameCompXref = None
 
     #####################################################
     ################# ERROR functions ###################
@@ -89,10 +97,12 @@ class rpCache:
         # ###################### Fetch the files if necessary ######################
         url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
-        for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv']:
+        # 3xCommon + rpReader
+        for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
             if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
                 print("Downloading "+file+"...")
                 urllib.request.urlretrieve(url+file, dirname+'/input_cache/'+file)
+
 
         #TODO: need to add this file to the git or another location
         for file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
@@ -123,88 +133,179 @@ class rpCache:
 
         ###################### Populate the cache #################################
 
+        # picklename = 'deprecatedMNXM_mnxm'
+        # input_file = 'chem_xref.tsv'
+        # args = [picklename, dirname+'/input_cache/'+input_file]
+        # self.processPickle(args)
+
         picklename = 'deprecatedMNXM_mnxm'
-        input_file = 'chem_xref.tsv'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            input_file = 'chem_xref.tsv'
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.deprecatedMNX(picklename,
                                             dirname+'/input_cache/'+input_file)
             self.deprecatedMNXM_mnxm = pickle_obj
-            self.setPickle(pickle_key, pickle_obj)
+            self.dumpPickle(pickle_key, pickle_obj, dirname)
+
 
         # # Choose the method according to store_mode: 'file' or 'redis'
         # method = getattr(self, "_gen_pickle_to_"+self.store_mode)
         # method(picklename, dirname+'/input_cache/'+input_file, dirname)
 
         picklename = 'deprecatedMNXR_mnxr'
-        input_file = 'reac_xref.tsv'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            input_file = 'reac_xref.tsv'
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.deprecatedMNX(picklename,
                                             dirname+'/input_cache/'+input_file)
             self.deprecatedMNXR_mnxr = pickle_obj
-            self.setPickle(pickle_key, pickle_obj)
+            self.storePickle(pickle_key, pickle_obj, dirname)
 
         picklename = 'mnxm_strc'
-        input_file = 'chem_prop.tsv'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
             print("Generating "+pickle_key+"...")
+            input_file = 'chem_prop.tsv'
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
                                        dirname+'/input_cache/'+input_file)
             pickle_obj = pickle.dumps(pickle_obj)
-            self.setPickle(pickle_key, pickle_obj)
-        # else:
-        #     if not os.path.isfile(dirname+'/cache/'+pickle_key+'.gz'):
-        #         print("Generating "+picklename+"...")
-        #         pickle.dump(self._mnxm_strc(dirname+'/input_cache/rr_compounds.tsv',
-        #                                     dirname+'/input_cache/'+input_file),
-        #                     gzip.open(dirname+'/cache/'+picklename+'.gz','wb'))
-        #     self.mnxm_strc = pickle.load(gzip.open(dirname+'/cache/'+pickle_key+'.gz', 'rb'))
+            self.storePickle(pickle_key, pickle_obj, dirname)
 
         picklename = 'chemXref'
-        input_file = 'chem_xref.tsv'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            input_file = 'chem_xref.tsv'
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.mnx_chemXref(picklename,
                                            dirname+'/input_cache/'+input_file)
-            self.setPickle(pickle_key, pickle_obj)
+            self.storePickle(pickle_key, pickle_obj, dirname)
 
         picklename = 'chebi_mnxm'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.chebi_xref(picklename,
                                          self.getPickle('chemXref'))
-            self.setPickle(pickle_key, pickle_obj)
+            self.storePickle(pickle_key, pickle_obj, dirname)
 
         picklename = 'rr_reactions'
-        input_file = 'rules_rall.tsv'
-        pickle_key = picklename+'.pickle'
-        if self.getPickle(pickle_key)==None:
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            input_file = 'rules_rall.tsv'
+            pickle_key = picklename+'.pickle'
             pickle_obj = self.retro_reactions(picklename,
                                               dirname+'/input_cache/'+input_file)
-            self.setPickle(pickle_key, pickle_obj)
+            self.storePickle(pickle_key, pickle_obj, dirname)
+
+
+        # rpReader
+        picklename = 'inchikey_mnxm'
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            input_file = 'chem_prop.tsv'
+            pickle_key = picklename+'.pickle'
+            pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
+                                       dirname+'/input_cache/'+input_file)
+            pickle_obj = pickle.dumps(pickle_obj)
+            self.storePickle(pickle_key, pickle_obj, dirname)
+
+        # Has to be checked by Melchior
+        # if not os.path.isfile(dirname+'/cache/inchikey_mnxm.pickle.gz'):
+        #     inchikey_mnxm = {}
+        #     for mnxm in self.mnxm_strc:
+        #         if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
+        #             inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
+        #         inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
+        #     pickle.dump(inchikey_mnxm, gzip.open(dirname+'/cache/inchikey_mnxm.pickle.gz','wb'))
+
+        picklename = 'compXref'
+        # Non-initialized?
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            pickle_key = picklename+'.pickle'
+            name_pubDB_xref, compName_mnxc = self.mnx_compXref(dirname+'/input_cache/comp_xref.tsv')
+            pickle_obj = pickle.dumps(name_pubDB_xref)
+            self.storePickle(pickle_key, pickle_obj, dirname)
+            pickle_obj = pickle.dumps(compName_mnxc)
+            self.storePickle('name'+pickle_key, pickle_obj, dirname)
 
         return True
 
 
 
-    # def _gen_pickle_to_file(self, picklename, input_arg, dirname):
-    #     pickle_key = picklename+'.pickle'
-    #     if not os.path.isfile(dirname+'/cache/'+pickle_key):
-    #         print("Generating "+pickle_key+"...")
-    #         method = getattr(self, '_'+picklename)
-    #         attribute = getattr(self, picklename)
-    #         attribute = method(input_arg)
-    #         pickle.dump(attribute, open(dirname+'/cache/'+pickle_key, 'wb'))
-    #     attribute = pickle.load(open(dirname+'/cache/'+pickle_key, 'rb'))
+    def processPickle(self, args):
+        picklename = '__'+args[0]
+        if getattr(self, picklename)==None:
+            print("Generating "+pickle_key+"...")
+            pickle_key = picklename+'.pickle'
+            # Choose method according to attribute name
+            method = '__m_'+args[0]
+            # Apply method and expand 'args' list as arguments
+            pickle_obj = method(**args)
+            # Set attribute to value
+            getattr(self, picklename) = pickle_obj
+            # Dump pickle
+            self.dumpPickle(pickle_key, pickle_obj, dirname)
 
 
-    def getPickle(self, picklename):
+    def storePickle(pickle_key, pickle_obj, dirname='./', gzip=False):
+        if self.store_mode=='redis':
+            self.storePickleToDB(pickle_key, pickle_obj)
+        else:
+            self.storePickleToFile(pickle_key, pickle_obj, dirname)
+
+    def storePickleToFile(self, pickle_key, data, dirname, gzip):
+        filename = dirname+'/cache/'+pickle_key
+        if gzip:
+            filename += '.gz'
+            pickle.dump(data, gzip.open(filename, 'wb'))
+        else:
+            pickle.dump(data, open(filename, 'wb'))
+
+    def storePickleToFile(self, pickle_key, data, filename, gzip):
+        if gzip:
+            filename += '.gz'
+            pickle.dump(data, gzip.open(filename, 'wb'))
+        else:
+            pickle.dump(data, open(filename, 'wb'))
+
+    def storePickleToDB(self, attribute, data):
+        self.redis.set(attribute, data)
+
+    def loadPickleFromFile(self, pickle_key, dirname, gzip=False):
+        filename = dirname+'/cache/'+pickle_key
+        if gzip:
+            filename += '.gz'
+            return pickle.load(gzip.open(filename, 'rb'))
+        else:
+            return pickle.load(open(filename, 'rb'))
+
+    def loadPickleFromFile(self, filename, gzip=False):
+        if gzip:
+            return pickle.load(gzip.open(filename, 'rb'))
+        else:
+            return pickle.load(open(filename, 'rb'))
+
+    def loadPickleFromDB(self, picklename):
         return pickle.loads(self.redis.get(picklename+'.pickle'))
 
     def setPickle(self, attribute, data):
-        self.redis.set(attribute, data)
+        attribute = data
+
+    def getPickle(self, attribute):
+        return attribute
+
+
+
 
 
     ## Convert chemical depiction to others type of depictions
@@ -217,7 +318,7 @@ class rpCache:
     #  @param itype type of depiction provided as input, str
     #  @param otype types of depiction to be generated, {"", "", ..}
     #  @return odepic generated depictions, {"otype1": "odepic1", ..}
-    def _convert_depiction(self, idepic, itype='smiles', otype={'inchikey'}):
+    def __convert_depiction(self, idepic, itype='smiles', otype={'inchikey'}):
         # Import (if needed)
         if itype == 'smiles':
             rdmol = MolFromSmiles(idepic, sanitize=True)
@@ -246,9 +347,9 @@ class rpCache:
     #  Generate a one-to-one dictionnary of old id's to new ones. Private function
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
-    def _checkMNXMdeprecated(self, mnxm):
+    def __checkMNXMdeprecated(self, mnxm):
         try:
-            return self.deprecatedMNXM_mnxm[mnxm]
+            return self.__deprecatedMNXM_mnxm[mnxm]
         except KeyError:
             return mnxm
 
@@ -256,9 +357,9 @@ class rpCache:
     ## Function to create a dictionnary of old to new reaction id's
     #
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
-    def _checkMNXRdeprecated(self, mnxr):
+    def __checkMNXRdeprecated(self, mnxr):
         try:
-            return self.deprecatedMNXR_mnxr[mnxr]
+            return self.__deprecatedMNXR_mnxr[mnxr]
         except KeyError:
             return mnxr
 
@@ -291,20 +392,22 @@ class rpCache:
     #         deprecatedMNXM_mnxm['MNXM01'] = 'MNXM1'
     #     return deprecatedMNXM_mnxm
 
-    def deprecatedMNX(self, deprecated, xref_path):
+    def __m_deprecatedMNX(self, xref_path):
         deprecatedMNX_mnx = {}
-        with open(chem_xref_path) as f:
+        with open(xref_path) as f:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
                     mnx = row[0].split(':')
                     if mnx[0]=='deprecated':
                         deprecatedMNX_mnx[mnx[1]] = row[1]
-            if (deprecated=='deprecatedMNXM_mnxm'):
-                deprecatedMNX_mnx.update(self.convertMNXM)
-                deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
         return deprecatedMNX_mnx
 
+    def __m_deprecatedMNXM(self, chem_xref_path):
+        deprecatedMNX_mnx = deprecatedMNX(chem_xref_path)
+        deprecatedMNX_mnx.update(self.convertMNXM)
+        deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
+        return deprecatedMNX_mnx
 
     ## Function to parse the reac_xref.tsv file of MetanetX
     #
@@ -314,16 +417,8 @@ class rpCache:
     #  @param self Object pointer
     #  @param reac_xref_path Input file path
     #  @return Dictionnary of identifiers
-    # def deprecatedMNXR(self, reac_xref_path):
-    #     deprecatedMNXR_mnxr = {}
-    #     with open(reac_xref_path) as f:
-    #         c = csv.reader(f, delimiter='\t')
-    #         for row in c:
-    #             if not row[0][0]=='#':
-    #                 mnx = row[0].split(':')
-    #                 if mnx[0]=='deprecated':
-    #                     deprecatedMNXR_mnxr[mnx[1]] = row[1]
-    #     return deprecatedMNXR_mnxr
+    def __m_deprecatedMNXR(self, reac_xref_path):
+        return deprecatedMNX(reac_xref_path)
 
 
     ## Function to parse the chemp_prop.tsv file from MetanetX and compounds.tsv from RetroRules. Uses the InchIkey as key to the dictionnary
@@ -333,7 +428,7 @@ class rpCache:
     #  @param self Object pointer
     #  @param chem_prop_path Input file path
     #  @return mnxm_strc Dictionnary of formula, smiles, inchi and inchikey
-    def mnx_strc(self, rr_compounds_path, chem_prop_path):
+    def __m_mnx_strc(self, rr_compounds_path, chem_prop_path):
         mnxm_strc = {}
         for row in csv.DictReader(open(rr_compounds_path), delimiter='\t'):
             tmp = {'formula':  None,
@@ -407,13 +502,13 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def mnx_chemXref(self, chem_xref_path):
+    def __m_mnx_chemXref(self, chem_xref_path):
         chemXref = {}
         with open(chem_xref_path) as f:
             c = csv.reader(f, delimiter='\t')
             for row in c:
                 if not row[0][0]=='#':
-                    mnx = self._checkMNXMdeprecated(row[1])
+                    mnx = self.__checkMNXMdeprecated(row[1])
                     if len(row[0].split(':'))==1:
                         dbName = 'mnx'
                         dbId = row[0]
@@ -445,7 +540,7 @@ class rpCache:
     #  @param chem_xref_path Input file path
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
-    def chebi_xref(self, chemXref):
+    def __m_chebi_xref(self, chemXref):
         chebi_mnxm = {}
         for mnxm in chemXref:
             if 'chebi' in chemXref[mnxm]:
@@ -461,7 +556,7 @@ class rpCache:
     #  @param self The object pointer.
     #  @param path The input file path.
     #  @return rule Dictionnary describing each reaction rule
-    def retro_reactions(self, rules_rall_path):
+    def __m_retro_reactions(self, rules_rall_path):
         try:
             #with open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
@@ -475,7 +570,7 @@ class rpCache:
                 #WARNING: can have multiple products so need to seperate them
                 products = {}
                 for i in row['Product_IDs'].split('.'):
-                    mnxm = self._checkMNXMdeprecated(i)
+                    mnxm = self.__checkMNXMdeprecated(i)
                     if not mnxm in products:
                         products[mnxm] = 1
                     else:
@@ -496,6 +591,51 @@ class rpCache:
                 self.logger.error('Could not read the rules_rall file ('+str(rules_rall_path)+')')
                 return {}
         return rule
+
+    # rpReader
+    ## Function to parse the compXref.tsv file of MetanetX
+    #
+    #  Generate a dictionnary of compartments id's (MNX) to other database id's
+    #
+    #  @param self Object pointer
+    #  @param chem_xref_path Input file path
+    #  @return a The dictionnary of identifiers
+    #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
+    def __m_mnx_compXref(self, compXref_path):
+        name_pubDB_xref = {}
+        compName_mnxc = {}
+        try:
+            with open(compXref_path) as f:
+                c = csv.reader(f, delimiter='\t')
+                #not_recognised = []
+                for row in c:
+                    #cid = row[0].split(':')
+                    if not row[0][0]=='#':
+                        #collect the info
+                        mnxc = row[1]
+                        if len(row[0].split(':'))==1:
+                            dbName = 'mnx'
+                            dbCompId = row[0]
+                        else:
+                            dbName = row[0].split(':')[0]
+                            dbCompId = ''.join(row[0].split(':')[1:])
+                            dbCompId = dbCompId.lower()
+                        if dbName=='deprecated':
+                            dbName = 'mnx'
+                        #create the dicts
+                        if not mnxc in name_pubDB_xref:
+                            name_pubDB_xref[mnxc] = {}
+                        if not dbName in name_pubDB_xref[mnxc]:
+                            name_pubDB_xref[mnxc][dbName] = []
+                        if not dbCompId in name_pubDB_xref[mnxc][dbName]:
+                            name_pubDB_xref[mnxc][dbName].append(dbCompId)
+                        #create the reverse dict
+                        if not dbCompId in compName_mnxc:
+                            compName_mnxc[dbCompId] = mnxc
+        except FileNotFoundError:
+            self.logger.error('compXref file not found')
+            return {}
+        return name_pubDB_xref, compName_mnxc
 
 
 if __name__ == "__main__":
