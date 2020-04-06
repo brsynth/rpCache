@@ -193,6 +193,7 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute_name, result)
+        print(self._chemXref)
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
