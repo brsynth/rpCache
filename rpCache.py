@@ -154,7 +154,7 @@ class rpCache:
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
         pickles_keys = [pickle_key, 'name'+pickle_key]
-        args = [picklename, [input_cache+'/comp_xref.tsv']]
+        args = [picklename, input_cache+'/comp_xref.tsv']
         try:
             # Check if attribute 'picklename' is set
             if self.checkPickle(pickle_key, dirname):
