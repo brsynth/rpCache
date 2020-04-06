@@ -151,6 +151,7 @@ class rpCache:
             self.processPickle(dirname, [picklename, *inputs[picklename]])
 
         picklename = 'compXref'
+        attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
         pickles_keys = [pickle_key, 'name'+pickle_key]
         try:
