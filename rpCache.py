@@ -504,7 +504,7 @@ class rpCache:
     #  @param self The object pointer.
     #  @param path The input file path.
     #  @return rule Dictionnary describing each reaction rule
-    def _m_retro_reactions(self, rules_rall_path):
+    def _m_rr_reactions(self, rules_rall_path):
         try:
             #with open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
