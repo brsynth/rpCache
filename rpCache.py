@@ -256,11 +256,11 @@ class rpCache:
             # Choose method according to attribute name
             method = getattr(self, '_m'+attribute_name)
             # Apply method and expand 'args' list as arguments
-            pickle_obj = method(*args[1:])
+            result = method(*args[1:])
             # Set attribute to value
-            setattr(self, attribute_name, pickle_obj)
+            setattr(self, attribute_name, result)
             # Dump pickle
-            self.storePickle(pickle_key, pickle_obj, dirname)
+            self.storePickle(pickle_key, result, dirname)
 
     # def __getattr__(self, name, args):
     #     print(name, *args)
@@ -289,7 +289,7 @@ class rpCache:
             pickle.dump(data, open(filename, 'wb'))
 
     def storePickleToDB(self, attribute, data):
-        self.redis.set(attribute, data)
+        self.redis.set(attribute, pickle.dump(data))
 
     def loadPickleFromFile(self, pickle_key, dirname, gzip=False):
         filename = dirname+'/cache/'+pickle_key
