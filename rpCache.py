@@ -247,17 +247,18 @@ class rpCache:
 
     def processPickle(self, args):
         picklename = args[0]
-        attribute = getattr(self, '_'+picklename)
+        attribute_name = '_'+picklename
+        attribute = getattr(self, attribute_name)
         # Check if attribute 'picklename' is set
         if not attribute:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
-            method = getattr(self, '_m'+attribute)
+            method = getattr(self, '_m'+attribute_name)
             # Apply method and expand 'args' list as arguments
             pickle_obj = method(*args[1:])
             # Set attribute to value
-            setattr(self, attribute, pickle_obj)
+            setattr(self, attribute_name, pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
