@@ -152,7 +152,7 @@ class rpCache:
 
         picklename = 'compXref'
         # Non-initialized?
-        if getattr(self, picklename)==None:
+        if getattr(self, '_'+picklename)==None:
             print("Generating "+pickle_key+"...")
             pickle_key = picklename+'.pickle'
             name_pubDB_xref, compName_mnxc = self.mnx_compXref(dirname+'/input_cache/comp_xref.tsv')
@@ -163,107 +163,6 @@ class rpCache:
 
         return True
 
-        # picklename = 'deprecatedMNXM_mnxm'
-        # # Non-initialized?
-        # if getattr(self, picklename)==None:
-        #     print("Generating "+pickle_key+"...")
-        #     input_file = 'chem_xref.tsv'
-        #     pickle_key = picklename+'.pickle'
-        #     pickle_obj = self.deprecatedMNX(picklename,
-        #                                     dirname+'/input_cache/'+input_file)
-        #     self.deprecatedMNXM_mnxm = pickle_obj
-        #     self.dumpPickle(pickle_key, pickle_obj, dirname)
-
-
-        # # Choose the method according to store_mode: 'file' or 'redis'
-        # method = getattr(self, "_gen_pickle_to_"+self.store_mode)
-        # method(picklename, dirname+'/input_cache/'+input_file, dirname)
-
-        picklename = 'deprecatedMNXR_mnxr'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'reac_xref.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.deprecatedMNX(picklename,
-                                            dirname+'/input_cache/'+input_file)
-            self.deprecatedMNXR_mnxr = pickle_obj
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-        picklename = 'mnxm_strc'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'chem_prop.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
-                                       dirname+'/input_cache/'+input_file)
-            pickle_obj = pickle.dumps(pickle_obj)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-        picklename = 'chemXref'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'chem_xref.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.mnx_chemXref(picklename,
-                                           dirname+'/input_cache/'+input_file)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-        picklename = 'chebi_mnxm'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.chebi_xref(picklename,
-                                         self.getPickle('chemXref'))
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-        picklename = 'rr_reactions'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'rules_rall.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.retro_reactions(picklename,
-                                              dirname+'/input_cache/'+input_file)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-
-        # rpReader
-        picklename = 'inchikey_mnxm'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            input_file = 'chem_prop.tsv'
-            pickle_key = picklename+'.pickle'
-            pickle_obj = self.mnx_strc(dirname+'/input_cache/rr_compounds.tsv',
-                                       dirname+'/input_cache/'+input_file)
-            pickle_obj = pickle.dumps(pickle_obj)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-
-        # Has to be checked by Melchior
-        # if not os.path.isfile(dirname+'/cache/inchikey_mnxm.pickle.gz'):
-        #     inchikey_mnxm = {}
-        #     for mnxm in self.mnxm_strc:
-        #         if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
-        #             inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
-        #         inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
-        #     pickle.dump(inchikey_mnxm, gzip.open(dirname+'/cache/inchikey_mnxm.pickle.gz','wb'))
-
-        picklename = 'compXref'
-        # Non-initialized?
-        if getattr(self, picklename)==None:
-            print("Generating "+pickle_key+"...")
-            pickle_key = picklename+'.pickle'
-            name_pubDB_xref, compName_mnxc = self.mnx_compXref(dirname+'/input_cache/comp_xref.tsv')
-            pickle_obj = pickle.dumps(name_pubDB_xref)
-            self.storePickle(pickle_key, pickle_obj, dirname)
-            pickle_obj = pickle.dumps(compName_mnxc)
-            self.storePickle('name'+pickle_key, pickle_obj, dirname)
-
-        return True
 
 
 
@@ -286,16 +185,14 @@ class rpCache:
                 self.storePickle(pickle_key, result, dirname)
             sys_stdout.write("\033[0;32m") # Green
             print(" OK")
+            sys_stdout.write("\033[0;0m") # Reset
             # Set attribute to value
             setattr(self, attribute_name, result)
         except:
-            sys_stdout.write("\033[1;31m") # Green
+            sys_stdout.write("\033[1;31m") # Red
             print(" Failed")
-        sys_stdout.write("\033[0;0m") # Reset
-
-    # def __getattr__(self, name, args):
-    #     print(name, *args)
-    #     return self.name(*args)
+            sys_stdout.write("\033[0;0m") # Reset
+            raise
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
