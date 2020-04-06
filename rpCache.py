@@ -30,17 +30,17 @@ class rpCache:
                         'MNXM114062': 'MNXM3',
                         'MNXM145523': 'MNXM57',
                         'MNXM57425': 'MNXM9',
-                        'MNXM137': 'MNXM588022'}
-        'deprecatedMNXM_mnxm': None
-        'deprecatedMNXR_mnxr': None
-        'mnxm_strc': None
-        'chemXref': None
-        'rr_reactions': None
-        'chebi_mnxm': None
+                        'MNXM137': 'MNXM588022'},
+        'deprecatedMNXM_mnxm': None,
+        'deprecatedMNXR_mnxr': None,
+        'mnxm_strc': None,
+        'chemXref': None,
+        'rr_reactions': None,
+        'chebi_mnxm': None,
 
         # rpReader attributes
-        'inchikey_mnxm': None
-        'compXref': None
+        'inchikey_mnxm': None,
+        'compXref': None,
         'nameCompXref': None
     }
 
