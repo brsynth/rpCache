@@ -297,7 +297,7 @@ class rpCache:
     def _checkMNXMdeprecated(self, mnxm):
         try:
             return self._deprecatedMNXM_mnxm[mnxm]
-        except KeyError:
+        except (KeyError, TypeError):
             return mnxm
 
 
@@ -307,7 +307,7 @@ class rpCache:
     def _checkMNXRdeprecated(self, mnxr):
         try:
             return self._deprecatedMNXR_mnxr[mnxr]
-        except KeyError:
+        except (KeyError, TypeError):
             return mnxr
 
 
