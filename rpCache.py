@@ -252,15 +252,12 @@ class rpCache:
         if not attribute:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
-            # pickle_obj = self.__m_deprecatedMNXM_mnxm(*args[1:])
             # Choose method according to attribute name
-            method = getattr(self, '_m_'+picklename)
-            pickle_obj = method(*args[1:])
+            method = getattr(self, '_m'+pickelname)
             # Apply method and expand 'args' list as arguments
-            # pickle_obj = method(args)
+            pickle_obj = method(*args[1:])
             # Set attribute to value
-            exit()
-            setattr(self, __dict__['_'+type(rpcache).__name__+picklename], pickle_obj)
+            setattr(self, attribute, pickle_obj)
             # Dump pickle
             self.storePickle(pickle_key, pickle_obj, dirname)
 
