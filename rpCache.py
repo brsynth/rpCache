@@ -9,6 +9,7 @@ import re
 import tarfile
 import shutil
 import redis
+from sys import stdout as sys_stdout
 
 #######################################################
 ################### rpCache  ##########################
@@ -274,12 +275,12 @@ class rpCache:
             try:
                 print("Loading "+pickle_key+"...", end = '')
                 result = self.loadPickle(pickle_key, dirname)
-                sys.stdout.write("\033[0;32m") # Green
+                sys_stdout.write("\033[0;32m") # Green
                 print(" OK")
             except:
-                sys.stdout.write("\033[1;31m") # Green
+                sys_stdout.write("\033[1;31m") # Green
                 print(" Failed")
-            sys.stdout.write("\033[0;0m") # Reset
+            sys_stdout.write("\033[0;0m") # Reset
         else:
             try:
                 print("Generating "+pickle_key+"...", end = '')
@@ -290,12 +291,12 @@ class rpCache:
                 result = method(*args[1:])
                 # Store pickle
                 self.storePickle(pickle_key, result, dirname)
-                sys.stdout.write("\033[0;32m") # Green
+                sys_stdout.write("\033[0;32m") # Green
                 print(" OK")
             except:
-                sys.stdout.write("\033[1;31m") # Green
+                sys_stdout.write("\033[1;31m") # Green
                 print(" Failed")
-            sys.stdout.write("\033[0;0m") # Reset
+            sys_stdout.write("\033[0;0m") # Reset
         # Set attribute to value
         setattr(self, attribute_name, result)
 
