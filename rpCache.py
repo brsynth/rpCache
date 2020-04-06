@@ -271,19 +271,31 @@ class rpCache:
         pickle_key = picklename+'.pickle'
         # Check if attribute 'picklename' is set
         if self.checkPickle(pickle_key, dirname):
-            print("Loading "+pickle_key+"...", end = '')
-            result = self.loadPickle(pickle_key, dirname)
-            print("\033[1;32;40m OK")
+            try:
+                print("Loading "+pickle_key+"...", end = '')
+                result = self.loadPickle(pickle_key, dirname)
+                sys.stdout.write("\033[0;32m") # Green
+                print(" OK")
+            except:
+                sys.stdout.write("\033[1;31m") # Green
+                print(" Failed")
+            sys.stdout.write("\033[0;0m") # Reset
         else:
-            print("Generating "+pickle_key+"...", end = '')
-            attribute_name = '_'+picklename
-            # Choose method according to attribute name
-            method = getattr(self, '_m'+attribute_name)
-            # Apply method and expand 'args' list as arguments
-            result = method(*args[1:])
-            # Store pickle
-            self.storePickle(pickle_key, result, dirname)
-            print("\033[1;32;40m OK")
+            try:
+                print("Generating "+pickle_key+"...", end = '')
+                attribute_name = '_'+picklename
+                # Choose method according to attribute name
+                method = getattr(self, '_m'+attribute_name)
+                # Apply method and expand 'args' list as arguments
+                result = method(*args[1:])
+                # Store pickle
+                self.storePickle(pickle_key, result, dirname)
+                sys.stdout.write("\033[0;32m") # Green
+                print(" OK")
+            except:
+                sys.stdout.write("\033[1;31m") # Green
+                print(" Failed")
+            sys.stdout.write("\033[0;0m") # Reset
         # Set attribute to value
         setattr(self, attribute_name, result)
 
