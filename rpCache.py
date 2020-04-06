@@ -136,14 +136,14 @@ class rpCache:
             shutil.rmtree(dirname+'/input_cache/retrorules_rr02_rp3_hs')
 
         ###################### Populate the cache #################################
-        input_cache = dirname+'/input_cache/'
+        input_cache = dirname+'/input_cache'
         inputs = {
-            'deprecatedMNXM_mnxm': [input_cache+'chem_xref.tsv'],
-            'deprecatedMNXR_mnxr': [input_cache+'reac_xref.tsv'],
-            'mnxm_strc': [input_cache+'rr_compounds.tsv', input_cache+'chem_prop.tsv'],
-            'chemXref': [input_cache+'chem_xref.tsv'],
+            'deprecatedMNXM_mnxm': [input_cache+'/chem_xref.tsv'],
+            'deprecatedMNXR_mnxr': [input_cache+'/reac_xref.tsv'],
+            'mnxm_strc': [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv'],
+            'chemXref': [input_cache+'/chem_xref.tsv'],
             'chebi_mnxm': [],
-            'rr_reactions': [input_cache+'rules_rall.tsv'],
+            'rr_reactions': [input_cache+'/rules_rall.tsv'],
             'inchikey_mnxm': []
         }
 
@@ -154,6 +154,7 @@ class rpCache:
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
         pickles_keys = [pickle_key, 'name'+pickle_key]
+        args = [picklename, [input_cache+'/comp_xref.tsv']]
         try:
             # Check if attribute 'picklename' is set
             if self.checkPickle(pickle_key, dirname):
@@ -166,7 +167,7 @@ class rpCache:
                 method = getattr(self, '_m'+attribute_name)
                 # Apply method and expand 'args' list as arguments
                 # Put results in a list
-                results = method(*[])
+                results = method(*args[1:])
                 for i in len(results):
                     # Store pickle
                     self.storePickle(pickle_keys[i], results[i], dirname)
