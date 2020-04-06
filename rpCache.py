@@ -267,7 +267,7 @@ class rpCache:
     #     return self.name(*args)
 
 
-    def storePickle(pickle_key, pickle_obj, dirname='./', gzip=False):
+    def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
         if self.store_mode=='redis':
             self.storePickleToDB(pickle_key, pickle_obj)
         else:
