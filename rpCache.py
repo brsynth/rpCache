@@ -253,7 +253,7 @@ class rpCache:
             pickle_key = picklename+'.pickle'
             print("Generating "+pickle_key+"...")
             # Choose method according to attribute name
-            method = getattr(self, '_m'+pickelname)
+            method = getattr(self, '_m'+picklename)
             # Apply method and expand 'args' list as arguments
             pickle_obj = method(*args[1:])
             # Set attribute to value
