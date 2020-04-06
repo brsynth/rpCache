@@ -255,7 +255,7 @@ class rpCache:
             # Choose method according to attribute name
             method = getattr(self, '__m_'+picklename)
             # Apply method and expand 'args' list as arguments
-            pickle_obj = method(*args)
+            pickle_obj = method(args)
             # Set attribute to value
             setattr(self, __properties[picklename], pickle_obj)
             # Dump pickle
