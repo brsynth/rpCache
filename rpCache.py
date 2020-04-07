@@ -223,11 +223,11 @@ class rpCache:
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
         if self.store_mode=='redis':
-            self.storePickleToDB(pickle_key, pickle_obj)
+            self._storePickleToDB(pickle_key, pickle_obj)
         else:
-            self.storePickleToFile(pickle_key, pickle_obj, dirname)
+            self._storePickleToFile(pickle_key, pickle_obj, dirname)
 
-    def storePickleToFile(self, pickle_key, data, dirname, gzip):
+    def _storePickleToFile(self, pickle_key, data, dirname, gzip):
         filename = dirname+'/cache/'+pickle_key
         if gzip:
             filename += '.gz'
@@ -235,23 +235,23 @@ class rpCache:
         else:
             pickle.dump(data, open(filename, 'wb'))
 
-    def storePickleToFile(self, pickle_key, data, filename, gzip):
+    def _storePickleToFile(self, pickle_key, data, filename, gzip):
         if gzip:
             filename += '.gz'
             pickle.dump(data, gzip.open(filename, 'wb'))
         else:
             pickle.dump(data, open(filename, 'wb'))
 
-    def storePickleToDB(self, pickle_key, data):
+    def _storePickleToDB(self, pickle_key, data):
         self.redis.set(pickle_key, pickle.dumps(data))
 
     def loadPickle(self, pickle_key, dirname='./', gzip=False):
         if self.store_mode=='redis':
-            return self.loadPickleFromDB(pickle_key)
+            return self._loadPickleFromDB(pickle_key)
         else:
-            return self.loadPickleFromFile(pickle_key, dirname)
+            return self._loadPickleFromFile(pickle_key, dirname)
 
-    def loadPickleFromFile(self, pickle_key, dirname, gzip=False):
+    def _loadPickleFromFile(self, pickle_key, dirname, gzip=False):
         filename = dirname+'/cache/'+pickle_key
         if gzip:
             filename += '.gz'
@@ -259,13 +259,13 @@ class rpCache:
         else:
             return pickle.load(open(filename, 'rb'))
 
-    def loadPickleFromFile(self, filename, gzip=False):
+    def _loadPickleFromFile(self, filename, gzip=False):
         if gzip:
             return pickle.load(gzip.open(filename, 'rb'))
         else:
             return pickle.load(open(filename, 'rb'))
 
-    def loadPickleFromDB(self, pickle_key):
+    def _loadPickleFromDB(self, pickle_key):
         return pickle.loads(self.redis.get(pickle_key))
 
     def setPickle(self, attribute, data):
