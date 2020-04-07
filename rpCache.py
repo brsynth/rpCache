@@ -59,6 +59,9 @@ class rpCache:
         self.compXref = None
         self.nameCompXref = None
 
+        if not loadCache():
+            raise ValueError
+
 
     #####################################################
     ################# ERROR functions ###################
@@ -645,5 +648,3 @@ class rpCache:
 
 if __name__ == "__main__":
     rpcache = rpCache('file')
-    if not rpcache.loadCache():
-        raise ValueError
