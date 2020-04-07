@@ -182,10 +182,10 @@ class rpCache:
         try:
             # Check if attribute is set
             if self.checkAttribute(attribute, dirname):
-                print("Loading from "+self.store_mode+" "+attribute+"...", end = '', flush=True)
+                print("Loading "+attribute+" from "+self.store_mode+"...", end = '', flush=True)
                 result = self.loadAttribute(attribute, dirname)
             else:
-                print("Generating to "+self.store_mode+" "+attribute+"...", end = '', flush=True)
+                print("Generating "+attribute+" to "+self.store_mode+"...", end = '', flush=True)
                 # Choose method according to attribute name
                 method = getattr(self, '_m_'+attribute)
                 # Apply method and expand 'args' list as arguments
@@ -210,11 +210,11 @@ class rpCache:
             results = []
             # Check if attribute 'picklename' is set
             if self.checkAttribute(attributes[0], dirname):
-                print("Loading "+attributes[0]+"...", end = '', flush=True)
+                print("Loading "+attributes[0]+" from "+self.store_mode+"...", end = '', flush=True)
                 for i in range(len(attributes)):
                     results += [self.loadAttribute(attributes[i], dirname)]
             else:
-                print("Generating "+attributes[0]+"...", end = '', flush=True)
+                print("Generating "+attributes[0]+" to "+self.store_mode+"...", end = '', flush=True)
                 # Choose method according to attribute name
                 method = getattr(self, '_m_'+attributes[0])
                 # Apply method and expand 'args' list as arguments
@@ -241,7 +241,7 @@ class rpCache:
         if self.store_mode=='redis':
             self._storePickleToDB(pickle_key, pickle_obj)
         else:
-            self._storePickleToFile(pickle_key, pickle_obj, dirname)
+            self._storePickleToFile(pickle_key, pickle_obj, dirname, gzip)
 
     def storeAttribute(self, attribute, data, dirname='./', gzip=False):
         self.storePickle(attribute+'.pickle', pickle.dumps(data), dirname, gzip)
@@ -261,30 +261,30 @@ class rpCache:
 # redisClient.hset(hashName, 1, "Cheesecake")
 
 
-    def loadPickle(self, pickle_key, dirname='./', gzip=False):
+    def loadPickle(self, pickle_key, dirname='./', gz=False):
         if self.store_mode=='redis':
-            return self._loadPickleFromDB(pickle_key)
+            return self._loadPickleFromDB(pickle_key, gz)
         else:
-            return self._loadPickleFromFile(pickle_key, dirname)
+            return self._loadPickleFromFile(pickle_key, dirname, gz)
 
-    def loadAttribute(self, attribute, dirname='./', gzip=False):
-        return self.loadPickle(attribute+'.pickle', dirname, gzip)
+    def loadAttribute(self, attribute, dirname='./', gz=False):
+        return self.loadPickle(attribute+'.pickle', dirname, gz)
 
-    def _loadPickleFromFile(self, pickle_key, dirname, gzip=False):
+    def _loadPickleFromFile(self, pickle_key, dirname, gz=False):
         filename = dirname+'/cache/'+pickle_key
-        if gzip:
+        if gz:
             filename += '.gz'
             return pickle.load(gzip.open(filename, 'rb'))
         else:
             return pickle.load(open(filename, 'rb'))
 
-    def _loadPickleFromFile(self, filename, gzip=False):
-        if gzip:
-            return pickle.load(gzip.open(filename, 'rb'))
-        else:
-            return pickle.load(open(filename, 'rb'))
+    # def _loadPickleFromFile(self, filename, gz=False):
+    #     if gzip:
+    #         return pickle.load(gzip.open(filename, 'rb'))
+    #     else:
+    #         return pickle.load(open(filename, 'rb'))
 
-    def _loadPickleFromDB(self, pickle_key):
+    def _loadPickleFromDB(self, pickle_key, gz=False):
         return pickle.loads(self.redis.get(pickle_key))
 
     def setPickle(self, attribute, data):
@@ -300,7 +300,7 @@ class rpCache:
         if self.store_mode=='redis':
             return self.redis.exists(pickle_key)
         else:
-            return os.path.isfile(dirname+'/input_cache/'+pickle_key)
+            return os.path.isfile(dirname+'/cache/'+pickle_key)
 
 
     ## Convert chemical depiction to others type of depictions
@@ -538,9 +538,9 @@ class rpCache:
 #    def _m_chebi_mnxm(self, chemXref):
     def _m_chebi_mnxm(self):
         chebi_mnxm = {}
-        for mnxm in self._chemXref:
-            if 'chebi' in self._chemXref[mnxm]:
-                for c in self._chemXref[mnxm]['chebi']:
+        for mnxm in self.chemXref:
+            if 'chebi' in self.chemXref[mnxm]:
+                for c in self.chemXref[mnxm]['chebi']:
                     chebi_mnxm[c] = mnxm
         return chebi_mnxm
 
@@ -644,6 +644,6 @@ class rpCache:
 
 
 if __name__ == "__main__":
-    rpcache = rpCache('redis')
+    rpcache = rpCache('file')
     if not rpcache.loadCache():
         raise ValueError
