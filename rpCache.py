@@ -59,7 +59,7 @@ class rpCache:
         self.compXref = None
         self.nameCompXref = None
 
-        if not loadCache():
+        if not self.loadCache():
             raise ValueError
 
 
