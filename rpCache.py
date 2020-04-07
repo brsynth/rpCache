@@ -147,8 +147,13 @@ class rpCache:
             'inchikey_mnxm': []
         }
 
+        import time
+
         for picklename in inputs:
+            start = time.time()
             self.processPickle(dirname, [picklename, *inputs[picklename]])
+            end = time.time()
+            print(end - start)
 
         picklename = 'compXref'
         attribute_name = '_'+picklename
@@ -185,8 +190,6 @@ class rpCache:
             setattr(self, '_'+pickle_keys[i], results[i])
 
         return True
-
-
 
 
     def processPickle(self, dirname, args):
