@@ -153,7 +153,7 @@ class rpCache:
             start = time.time()
             self.processPickle(dirname, [picklename, *inputs[picklename]])
             end = time.time()
-            print(end - start)
+            print(" (%.2fs)" % (end - start))
 
         picklename = 'compXref'
         attribute_name = '_'+picklename
@@ -178,7 +178,7 @@ class rpCache:
                     # Store pickle
                     self.storePickle(pickle_keys[i], results[i], dirname)
             sys_stdout.write("\033[0;32m") # Green
-            print(" OK")
+            print(" OK", end = '', flush=True)
             sys_stdout.write("\033[0;0m") # Reset
         except:
             sys_stdout.write("\033[1;31m") # Red
