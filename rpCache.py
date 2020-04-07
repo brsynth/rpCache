@@ -40,24 +40,24 @@ class rpCache:
         self.logger.info('Started instance of rpCache')
 
         # Common attribues
-        self._convertMNXM = {'MNXM162231': 'MNXM6',
-                         'MNXM84': 'MNXM15',
-                         'MNXM96410': 'MNXM14',
-                         'MNXM114062': 'MNXM3',
-                         'MNXM145523': 'MNXM57',
-                         'MNXM57425': 'MNXM9',
-                         'MNXM137': 'MNXM588022'}
-        self._deprecatedMNXM_mnxm = None
-        self._deprecatedMNXR_mnxr = None
-        self._mnxm_strc = None
-        self._chemXref = None
-        self._rr_reactions = None
-        self._chebi_mnxm = None
+        self.convertMNXM = {'MNXM162231': 'MNXM6',
+                             'MNXM84': 'MNXM15',
+                             'MNXM96410': 'MNXM14',
+                             'MNXM114062': 'MNXM3',
+                             'MNXM145523': 'MNXM57',
+                             'MNXM57425': 'MNXM9',
+                             'MNXM137': 'MNXM588022'}
+        self.deprecatedMNXM_mnxm = None
+        self.deprecatedMNXR_mnxr = None
+        self.mnxm_strc = None
+        self.chemXref = None
+        self.rr_reactions = None
+        self.chebi_mnxm = None
 
         # rpReader attributes
-        self._inchikey_mnxm = None
-        self._compXref = None
-        self._nameCompXref = None
+        self.inchikey_mnxm = None
+        self.compXref = None
+        self.nameCompXref = None
 
 
     #####################################################
@@ -148,7 +148,7 @@ class rpCache:
 
         ###################### Populate the cache #################################
         input_cache = dirname+'/input_cache'
-        inputs = {
+        attributes = {
             'deprecatedMNXM_mnxm': [input_cache+'/chem_xref.tsv'],
             'deprecatedMNXR_mnxr': [input_cache+'/reac_xref.tsv'],
             'mnxm_strc': [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv'],
@@ -157,41 +157,41 @@ class rpCache:
             'rr_reactions': [input_cache+'/rules_rall.tsv'],
             'inchikey_mnxm': []
         }
-        for picklename in inputs:
+        for attribute in attributes:
             start = time.time()
-            self._processPickle(picklename, dirname, inputs[picklename])
+            if not getattr(self, attribute):
+                self._processAttribute(attribute, dirname, attributes[attribute])
+                print(" ("+str(sys_getsizeof(getattr(self,attribute)))+" bytes)", end = '', flush=True)
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
-        inputs = {
+        attributes = {
             'compXref': [input_cache+'/comp_xref.tsv']
         }
-        start = time.time()
-        picklename = 'compXref'
-        picklenames = [picklename, 'name'+picklename]
-        self._processPickle2(picklenames, dirname, inputs[picklename])
-        end = time.time()
-        print(" (%.2fs)" % (end - start))
+        for attribute in attributes:
+            start = time.time()
+            if not getattr(self, attribute):
+                self._processAttribute2([attribute, 'name'+attribute], dirname, attributes[attribute])
+            end = time.time()
+            print(" (%.2fs)" % (end - start))
 
         return True
 
 
-    def _processPickle(self, picklename, dirname, args):
-        attribute_name = '_'+picklename
-        pickle_key = picklename+'.pickle'
+    def _processAttribute(self, attribute, dirname, args):
         try:
-            # Check if attribute 'picklename' is set
-            if self.checkPickle(pickle_key, dirname):
-                print("Loading from "+self.store_mode+" "+pickle_key+"...", end = '', flush=True)
-                result = self.loadPickle(pickle_key, dirname)
+            # Check if attribute is set
+            if self.checkAttribute(attribute, dirname):
+                print("Loading from "+self.store_mode+" "+attribute+"...", end = '', flush=True)
+                result = self.loadAttribute(attribute, dirname)
             else:
-                print("Generating to "+self.store_mode+" "+pickle_key+"...", end = '', flush=True)
+                print("Generating to "+self.store_mode+" "+attribute+"...", end = '', flush=True)
                 # Choose method according to attribute name
-                method = getattr(self, '_m'+attribute_name)
+                method = getattr(self, '_m_'+attribute)
                 # Apply method and expand 'args' list as arguments
                 result = method(*args)
                 # Store pickle
-                self.storePickle(pickle_key, result, dirname)
+                self.storeAttribute(attribute, result, dirname)
             sys_stdout.write("\033[0;32m") # Green
             print(" OK", end = '', flush=True)
             sys_stdout.write("\033[0;0m") # Reset
@@ -201,36 +201,29 @@ class rpCache:
             sys_stdout.write("\033[0;0m") # Reset
             raise
         # Set attribute to value
-        setattr(self, attribute_name, result)
-        print(attribute_name, str(sys_getsizeof(result))+" bytes")
+        setattr(self, attribute, result)
 
 
     # Process with two outputs method
-    def _processPickle2(self, picklenames, dirname, args):
-        picklename = picklenames[0]
-        attribute_names = []
-        for i in range(len(picklenames)):
-            attribute_names += ['_'+picklenames[i]]
-        pickle_keys = []
-        for i in range(len(picklenames)):
-            pickle_keys += [picklenames[i]+'.pickle']
+    def _processPickle2(self, attributes, dirname, args):
         try:
             results = []
             # Check if attribute 'picklename' is set
-            if self.checkPickle(pickle_keys[0], dirname):
-                print("Loading "+pickle_keys[0]+"...", end = '', flush=True)
-                for i in range(len(pickle_keys)):
-                    results += [self.loadPickle(pickle_keys[i], dirname)]
+            if self.checkAttribute(attributes[0], dirname):
+                print("Loading "+attributes[0]+"...", end = '', flush=True)
+                for i in range(len(attributes)):
+                    results += [self.loadAttribute(attributes[i], dirname)]
             else:
-                print("Generating "+pickle_keys[0]+"...", end = '', flush=True)
+                print("Generating "+attributes[0]+"...", end = '', flush=True)
                 # Choose method according to attribute name
-                method = getattr(self, '_m'+attribute_names[0])
+                method = getattr(self, '_m_'+attributes[0])
                 # Apply method and expand 'args' list as arguments
                 # Put results in a list
                 results = method(*args)
                 for i in range(len(results)):
                     # Store pickle
-                    self.storePickle(pickle_keys[i], results[i], dirname)
+                    self.storeAttribute(attributes[i], results[i], dirname)
+                    print(attributes[i], str(sys_getsizeof(results[i]))+" bytes")
             sys_stdout.write("\033[0;32m") # Green
             print(" OK", end = '', flush=True)
             sys_stdout.write("\033[0;0m") # Reset
@@ -241,8 +234,7 @@ class rpCache:
             raise
         # Set attribute to value
         for i in range(len(results)):
-            setattr(self, '_'+pickle_keys[i], results[i])
-            print(pickle_keys[i], str(sys_getsizeof(results[i]))+" bytes")
+            setattr(self, attributes[i], results[i])
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
@@ -251,23 +243,21 @@ class rpCache:
         else:
             self._storePickleToFile(pickle_key, pickle_obj, dirname)
 
-    def _storePickleToFile(self, pickle_key, data, dirname, gzip):
+    def storeAttribute(self, attribute, data, dirname='./', gzip=False):
+        self.storePickle(attribute+'.pickle', pickle.dumps(data), dirname, gzip)
+
+    def _storePickleToFile(self, pickle_key, pickle_obj, dirname, gzip):
         filename = dirname+'/cache/'+pickle_key
         if gzip:
             filename += '.gz'
-            pickle.dump(data, gzip.open(filename, 'wb'))
+            with gzip.open(filename, "wb") as f:
+            	f.write(pickle_obj)
         else:
-            pickle.dump(data, open(filename, 'wb'))
+            with open(filename, "wb") as f:
+            	f.write(pickle_obj)
 
-    def _storePickleToFile(self, pickle_key, data, filename, gzip):
-        if gzip:
-            filename += '.gz'
-            pickle.dump(data, gzip.open(filename, 'wb'))
-        else:
-            pickle.dump(data, open(filename, 'wb'))
-
-    def _storePickleToDB(self, pickle_key, data):
-        self.redis.set(pickle_key, pickle.dumps(data))
+    def _storePickleToDB(self, pickle_key, pickle_obj):
+        self.redis.set(pickle_key, pickle_obj)
 # redisClient.hset(hashName, 1, "Cheesecake")
 
 
@@ -276,6 +266,9 @@ class rpCache:
             return self._loadPickleFromDB(pickle_key)
         else:
             return self._loadPickleFromFile(pickle_key, dirname)
+
+    def loadAttribute(self, attribute, dirname='./', gzip=False):
+        return self.loadPickle(attribute+'.pickle', dirname, gzip)
 
     def _loadPickleFromFile(self, pickle_key, dirname, gzip=False):
         filename = dirname+'/cache/'+pickle_key
@@ -299,6 +292,9 @@ class rpCache:
 
     def getPickle(self, attribute):
         return attribute
+
+    def checkAttribute(self, attribute, dirname):
+        return self.checkPickle(attribute+'.pickle', dirname)
 
     def checkPickle(self, pickle_key, dirname):
         if self.store_mode=='redis':
@@ -348,7 +344,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def _checkMNXMdeprecated(self, mnxm):
         try:
-            return self._deprecatedMNXM_mnxm[mnxm]
+            return self.deprecatedMNXM_mnxm[mnxm]
         except (KeyError, TypeError):
             return mnxm
 
@@ -358,7 +354,7 @@ class rpCache:
     # TODO: check other things about the mnxm emtry like if it has the right structure etc...
     def _checkMNXRdeprecated(self, mnxr):
         try:
-            return self._deprecatedMNXR_mnxr[mnxr]
+            return self.deprecatedMNXR_mnxr[mnxr]
         except (KeyError, TypeError):
             return mnxr
 
