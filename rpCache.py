@@ -175,6 +175,7 @@ class rpCache:
             start = time.time()
             if not getattr(self, attribute):
                 self._processAttribute2([attribute, 'name'+attribute], dirname, attributes[attribute])
+                print(" ("+str(sys_getsizeof(getattr(self,[attribute, 'name'+attribute])))+" bytes)", end = '', flush=True)
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
@@ -213,11 +214,11 @@ class rpCache:
             results = []
             # Check if attribute 'picklename' is set
             if self.checkAttribute(attributes[0], dirname):
-                print("Loading "+attributes[0]+" from "+self.store_mode+"...", end = '', flush=True)
+                print("Loading "+attributes+" from "+self.store_mode+"...", end = '', flush=True)
                 for i in range(len(attributes)):
                     results += [self.loadAttribute(attributes[i], dirname)]
             else:
-                print("Generating "+attributes[0]+" to "+self.store_mode+"...", end = '', flush=True)
+                print("Generating "+attributes+" to "+self.store_mode+"...", end = '', flush=True)
                 # Choose method according to attribute name
                 method = getattr(self, '_m_'+attributes[0])
                 # Apply method and expand 'args' list as arguments
@@ -226,7 +227,6 @@ class rpCache:
                 for i in range(len(results)):
                     # Store pickle
                     self.storeAttribute(attributes[i], results[i], dirname)
-                    print(attributes[i], str(sys_getsizeof(results[i]))+" bytes")
             sys_stdout.write("\033[0;32m") # Green
             print(" OK", end = '', flush=True)
             sys_stdout.write("\033[0;0m") # Reset
