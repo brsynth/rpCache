@@ -156,29 +156,26 @@ class rpCache:
             'rr_reactions': [input_cache+'/rules_rall.tsv'],
             'inchikey_mnxm': []
         }
-
         for picklename in inputs:
             start = time.time()
-            self._processPickle(dirname, [picklename, *inputs[picklename]])
+            self._processPickle(picklename, dirname, inputs[picklename])
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
         inputs = {
             'compXref': [input_cache+'/comp_xref.tsv']
         }
-
-        for picklename in inputs:
-            start = time.time()
-            picklenames = [picklename, 'name'+picklename]
-            self._processPickle2(picklenames, dirname, *inputs[picklename])
-            end = time.time()
-            print(" (%.2fs)" % (end - start))
+        start = time.time()
+        picklename = 'compXref'
+        picklenames = [picklename, 'name'+picklename]
+        self._processPickle2(picklenames, dirname, inputs[picklename])
+        end = time.time()
+        print(" (%.2fs)" % (end - start))
 
         return True
 
 
-    def _processPickle(self, dirname, args):
-        picklename = args[0]
+    def _processPickle(self, picklename, dirname, args):
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
         try:
@@ -191,7 +188,7 @@ class rpCache:
                 # Choose method according to attribute name
                 method = getattr(self, '_m'+attribute_name)
                 # Apply method and expand 'args' list as arguments
-                result = method(*args[1:])
+                result = method(*args)
                 # Store pickle
                 self.storePickle(pickle_key, result, dirname)
             sys_stdout.write("\033[0;32m") # Green
@@ -204,31 +201,33 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute_name, result)
+        import sys
+        print(attribute_name, str(sys.getsizeof(result))+" bytes")
 
 
-    # Process with two outputs methods
+    # Process with two outputs method
     def _processPickle2(self, picklenames, dirname, args):
         picklename = picklenames[0]
         attribute_names = []
         for i in range(len(picklenames)):
             attribute_names += ['_'+picklenames[i]]
+        pickle_keys = []
         for i in range(len(picklenames)):
-            pickle_keys += [picklename[i]+'pickle']
-        args = [picklename, input_cache+'/comp_xref.tsv']
+            pickle_keys += [picklenames[i]+'.pickle']
         try:
+            results = []
             # Check if attribute 'picklename' is set
             if self.checkPickle(pickle_keys[0], dirname):
                 print("Loading "+pickle_keys[0]+"...", end = '', flush=True)
-                results = []
                 for i in range(len(pickle_keys)):
                     results += [self.loadPickle(pickle_keys[i], dirname)]
             else:
                 print("Generating "+pickle_keys[0]+"...", end = '', flush=True)
                 # Choose method according to attribute name
-                method = getattr(self, '_m'+attribute_name)
+                method = getattr(self, '_m'+attribute_names[0])
                 # Apply method and expand 'args' list as arguments
                 # Put results in a list
-                results = method(*args[1:])
+                results = method(*args)
                 for i in range(len(results)):
                     # Store pickle
                     self.storePickle(pickle_keys[i], results[i], dirname)
@@ -268,6 +267,8 @@ class rpCache:
 
     def _storePickleToDB(self, pickle_key, data):
         self.redis.set(pickle_key, pickle.dumps(data))
+# redisClient.hset(hashName, 1, "Cheesecake")
+
 
     def loadPickle(self, pickle_key, dirname='./', gzip=False):
         if self.store_mode=='redis':
