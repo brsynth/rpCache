@@ -164,6 +164,7 @@ class rpCache:
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
+        start = time.time()
         picklename = 'compXref'
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
@@ -197,6 +198,8 @@ class rpCache:
         # Set attribute to value
         for i in range(len(results)):
             setattr(self, '_'+pickle_keys[i], results[i])
+        end = time.time()
+        print(" (%.2fs)" % (end - start))
 
         return True
 
