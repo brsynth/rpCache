@@ -205,7 +205,7 @@ class rpCache:
 
 
     # Process with two outputs method
-    def _processPickle2(self, attributes, dirname, args):
+    def _processAttribute2(self, attributes, dirname, args):
         try:
             results = []
             # Check if attribute 'picklename' is set
