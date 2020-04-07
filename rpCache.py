@@ -33,7 +33,7 @@ class rpCache:
     # @param db Mode of storing objects ('file' or 'redis')
     def __init__(self, db='file'):
         self.store_mode = db
-        if self.store_mode=='redis':
+        if self.store_mode!='file':
             self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0)
         #given by Thomas
         self.logger = logging.getLogger(__name__)
@@ -41,12 +41,12 @@ class rpCache:
 
         # Common attribues
         self.convertMNXM = {'MNXM162231': 'MNXM6',
-                             'MNXM84': 'MNXM15',
-                             'MNXM96410': 'MNXM14',
-                             'MNXM114062': 'MNXM3',
-                             'MNXM145523': 'MNXM57',
-                             'MNXM57425': 'MNXM9',
-                             'MNXM137': 'MNXM588022'}
+                            'MNXM84': 'MNXM15',
+                            'MNXM96410': 'MNXM14',
+                            'MNXM114062': 'MNXM3',
+                            'MNXM145523': 'MNXM57',
+                            'MNXM57425': 'MNXM9',
+                            'MNXM137': 'MNXM588022'}
         self.deprecatedMNXM_mnxm = None
         self.deprecatedMNXR_mnxr = None
         self.mnxm_strc = None
