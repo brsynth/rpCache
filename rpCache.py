@@ -214,11 +214,11 @@ class rpCache:
             results = []
             # Check if attribute 'picklename' is set
             if self.checkAttribute(attributes[0], dirname):
-                print("Loading "+attributes+" from "+self.store_mode+"...", end = '', flush=True)
+                print("Loading "+" ".join(attributes)+" from "+self.store_mode+"...", end = '', flush=True)
                 for i in range(len(attributes)):
                     results += [self.loadAttribute(attributes[i], dirname)]
             else:
-                print("Generating "+attributes+" to "+self.store_mode+"...", end = '', flush=True)
+                print("Generating "+" ".join(attributes)+" to "+self.store_mode+"...", end = '', flush=True)
                 # Choose method according to attribute name
                 method = getattr(self, '_m_'+attributes[0])
                 # Apply method and expand 'args' list as arguments
