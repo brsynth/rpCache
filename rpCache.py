@@ -175,7 +175,7 @@ class rpCache:
             start = time.time()
             if not getattr(self, attribute):
                 self._processAttribute2([attribute, 'name'+attribute], dirname, attributes[attribute])
-                print(" ("+str(sys_getsizeof(getattr(self,[attribute, 'name'+attribute])))+" bytes)", end = '', flush=True)
+                print(" ("+str(sys_getsizeof(getattr(self,attribute)))+" bytes)", end = '', flush=True)
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
