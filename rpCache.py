@@ -594,10 +594,10 @@ class rpCache:
 
     def _m_inchikey_mnxm(self):
         inchikey_mnxm = {}
-        for mnxm in self._mnxm_strc:
-            if not self._mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
-                inchikey_mnxm[self._mnxm_strc[mnxm]['inchikey']] = []
-            inchikey_mnxm[self._mnxm_strc[mnxm]['inchikey']].append(mnxm)
+        for mnxm in self.mnxm_strc:
+            if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
+                inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
+            inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
         return inchikey_mnxm
 
     # rpReader
