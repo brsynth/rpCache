@@ -10,6 +10,7 @@ import tarfile
 import shutil
 import redis
 from sys import stdout as sys_stdout
+import time
 
 #######################################################
 ################### rpCache  ##########################
@@ -104,16 +105,22 @@ class rpCache:
         # 3xCommon + rpReader
         for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
             if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
-                print("Downloading "+file+"...")
+                print("Downloading "+file+"...", end = '', flush=True)
+                start = time.time()
                 urllib.request.urlretrieve(url+file, dirname+'/input_cache/'+file)
+                end = time.time()
+                print(" (%.2fs)" % (end - start))
 
 
         #TODO: need to add this file to the git or another location
         for file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
             if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
-                print("Downloading "+file+"...")
+                print("Downloading "+file+"...", end = '', flush=True)
+                start = time.time()
                 urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
                                            dirname+'/input_cache/rr02_more_data.tar.gz')
+                end = time.time()
+                print(" (%.2fs)" % (end - start))
                 tar = tarfile.open(dirname+'/input_cache/rr02_more_data.tar.gz', 'r:gz')
                 tar.extractall(dirname+'/input_cache/')
                 tar.close()
@@ -125,9 +132,12 @@ class rpCache:
                 shutil.rmtree(dirname+'/input_cache/rr02_more_data')
 
         if not os.path.isfile(dirname+'/input_cache/rules_rall.tsv') or fetchInputFiles:
-            print("Downloading rules_rall.tsv...")
+            print("Downloading rules_rall.tsv...", end = '', flush=True)
+            start = time.time()
             urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
                                        dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
+            end = time.time()
+            print(" (%.2fs)" % (end - start))
             tar = tarfile.open(dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
             tar.extractall(dirname+'/input_cache/')
             tar.close()
@@ -147,7 +157,6 @@ class rpCache:
             'inchikey_mnxm': []
         }
 
-        import time
 
         for picklename in inputs:
             start = time.time()
@@ -210,7 +219,7 @@ class rpCache:
                 # Store pickle
                 self.storePickle(pickle_key, result, dirname)
             sys_stdout.write("\033[0;32m") # Green
-            print(" OK")
+            print(" OK", end = '', flush=True)
             sys_stdout.write("\033[0;0m") # Reset
         except:
             sys_stdout.write("\033[1;31m") # Red
