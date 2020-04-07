@@ -157,54 +157,27 @@ class rpCache:
             'inchikey_mnxm': []
         }
 
-
         for picklename in inputs:
             start = time.time()
-            self.processPickle(dirname, [picklename, *inputs[picklename]])
+            self._processPickle(dirname, [picklename, *inputs[picklename]])
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
-        start = time.time()
-        picklename = 'compXref'
-        attribute_name = '_'+picklename
-        pickle_key = picklename+'.pickle'
-        pickle_keys = [pickle_key, 'name'+pickle_key]
-        args = [picklename, input_cache+'/comp_xref.tsv']
-        try:
-            # Check if attribute 'picklename' is set
-            if self.checkPickle(pickle_key, dirname):
-                print("Loading "+pickle_key+"...", end = '', flush=True)
-                results = []
-                for i in range(len(pickle_keys)):
-                    results += [self.loadPickle(pickle_keys[i], dirname)]
-            else:
-                print("Generating "+pickle_key+"...", end = '', flush=True)
-                # Choose method according to attribute name
-                method = getattr(self, '_m'+attribute_name)
-                # Apply method and expand 'args' list as arguments
-                # Put results in a list
-                results = method(*args[1:])
-                for i in range(len(results)):
-                    # Store pickle
-                    self.storePickle(pickle_keys[i], results[i], dirname)
-            sys_stdout.write("\033[0;32m") # Green
-            print(" OK", end = '', flush=True)
-            sys_stdout.write("\033[0;0m") # Reset
-        except:
-            sys_stdout.write("\033[1;31m") # Red
-            print(" Failed")
-            sys_stdout.write("\033[0;0m") # Reset
-            raise
-        # Set attribute to value
-        for i in range(len(results)):
-            setattr(self, '_'+pickle_keys[i], results[i])
-        end = time.time()
-        print(" (%.2fs)" % (end - start))
+        inputs = {
+            'compXref': [input_cache+'/comp_xref.tsv']
+        }
+
+        for picklename in inputs:
+            start = time.time()
+            picklenames = [picklename, 'name'+picklename]
+            self._processPickle2(picklenames, dirname, *inputs[picklename])
+            end = time.time()
+            print(" (%.2fs)" % (end - start))
 
         return True
 
 
-    def processPickle(self, dirname, args):
+    def _processPickle(self, dirname, args):
         picklename = args[0]
         attribute_name = '_'+picklename
         pickle_key = picklename+'.pickle'
@@ -231,6 +204,45 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute_name, result)
+
+
+    # Process with two outputs methods
+    def _processPickle2(self, picklenames, dirname, args):
+        picklename = picklenames[0]
+        attribute_names = []
+        for i in range(len(picklenames)):
+            attribute_names += ['_'+picklenames[i]]
+        for i in range(len(picklenames)):
+            pickle_keys += [picklename[i]+'pickle']
+        args = [picklename, input_cache+'/comp_xref.tsv']
+        try:
+            # Check if attribute 'picklename' is set
+            if self.checkPickle(pickle_keys[0], dirname):
+                print("Loading "+pickle_keys[0]+"...", end = '', flush=True)
+                results = []
+                for i in range(len(pickle_keys)):
+                    results += [self.loadPickle(pickle_keys[i], dirname)]
+            else:
+                print("Generating "+pickle_keys[0]+"...", end = '', flush=True)
+                # Choose method according to attribute name
+                method = getattr(self, '_m'+attribute_name)
+                # Apply method and expand 'args' list as arguments
+                # Put results in a list
+                results = method(*args[1:])
+                for i in range(len(results)):
+                    # Store pickle
+                    self.storePickle(pickle_keys[i], results[i], dirname)
+            sys_stdout.write("\033[0;32m") # Green
+            print(" OK", end = '', flush=True)
+            sys_stdout.write("\033[0;0m") # Reset
+        except:
+            sys_stdout.write("\033[1;31m") # Red
+            print(" Failed")
+            sys_stdout.write("\033[0;0m") # Reset
+            raise
+        # Set attribute to value
+        for i in range(len(results)):
+            setattr(self, '_'+pickle_keys[i], results[i])
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
