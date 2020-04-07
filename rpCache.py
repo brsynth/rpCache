@@ -10,6 +10,7 @@ import tarfile
 import shutil
 import redis
 from sys import stdout as sys_stdout
+from sys import getsizeof as sys_getsizeof
 import time
 
 #######################################################
@@ -201,8 +202,7 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute_name, result)
-        import sys
-        print(attribute_name, str(sys.getsizeof(result))+" bytes")
+        print(attribute_name, str(sys_getsizeof(result))+" bytes")
 
 
     # Process with two outputs method
@@ -242,6 +242,7 @@ class rpCache:
         # Set attribute to value
         for i in range(len(results)):
             setattr(self, '_'+pickle_keys[i], results[i])
+            print(pickle_keys[i], str(sys_getsizeof(results[i]))+" bytes")
 
 
     def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
