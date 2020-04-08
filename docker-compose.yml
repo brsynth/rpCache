@@ -9,18 +9,18 @@ services:
     image: brsynth/rpcache
     command: python3.8 rpCache.py
     networks:
-      - redis
+      - db
     depends_on:
-      - redis
+      - db
     volumes:
       - input_cache:/home/input_cache
       - cache:/home/cache
 
-  redis:
+  db:
     image: redis:5-alpine
     command: redis-server --appendonly yes
     networks:
-      - redis
+      - db
     volumes:
       - redis:/data
 
@@ -54,4 +54,5 @@ volumes:
   redis:
 
 networks:
-  redis:
+  db:
+    name: db_pickles
