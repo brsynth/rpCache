@@ -10,8 +10,8 @@ services:
     command: python3.8 rpCache.py
     networks:
       - db
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
     volumes:
       - input_cache:/home/input_cache
       - cache:/home/cache

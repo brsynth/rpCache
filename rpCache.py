@@ -57,7 +57,7 @@ class rpCache:
         # rpReader attributes
         self.inchikey_mnxm = None
         self.compXref = None
-        self.nameCompXref = None
+        self.name_compXref = None
 
         if not self.loadCache():
             raise ValueError
@@ -174,8 +174,8 @@ class rpCache:
         for attribute in attributes:
             start = time.time()
             if not getattr(self, attribute):
-                self._processAttribute2([attribute, 'name'+attribute], dirname, attributes[attribute])
-                print(" ("+str(sys_getsizeof(getattr(self,attribute)))+" "+str(sys_getsizeof(getattr(self,'name'+attribute)))+" bytes)", end = '', flush=True)
+                self._processAttribute2([attribute, 'name_'+attribute], dirname, attributes[attribute])
+                print(" ("+str(sys_getsizeof(getattr(self,attribute)))+" "+str(sys_getsizeof(getattr(self,'name_'+attribute)))+" bytes)", end = '', flush=True)
             end = time.time()
             print(" (%.2fs)" % (end - start))
 
@@ -212,8 +212,13 @@ class rpCache:
     def _processAttribute2(self, attributes, dirname, args):
         try:
             results = []
-            # Check if attribute 'picklename' is set
-            if self.checkAttribute(attributes[0], dirname):
+            # Check if attributes are set
+            check = True
+            i=0
+            while check and i<len(attributes):
+                check = check and self.checkAttribute(attributes[i], dirname)
+                i+=1
+            if check:
                 print("Loading "+" ".join(attributes)+" from "+self.store_mode+"...", end = '', flush=True)
                 for i in range(len(attributes)):
                     results += [self.loadAttribute(attributes[i], dirname)]
