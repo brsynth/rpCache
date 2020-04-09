@@ -239,6 +239,8 @@ class rpCache:
 
 
     def _processAttribute(self, attribute, dirname, args):
+        if self.print:
+            print("attribute: ", attribute)
         try:
             # Check if attribute is set
             if self.checkAttribute(attribute, dirname):
@@ -248,6 +250,8 @@ class rpCache:
                 print("Generating "+attribute+" to "+self.store_mode+"...", end = '', flush=True)
                 # Choose method according to attribute name
                 method = getattr(self, '_m_'+attribute)
+                if self.print:
+                    print("method: ", method)
                 # Apply method and expand 'args' list as arguments
                 result = method(*args)
                 # Store pickle
@@ -262,6 +266,8 @@ class rpCache:
             raise
         # Set attribute to value
         setattr(self, attribute, result)
+        # if self.print:
+        #     print("result: ", result)
 
 
     # Process with two outputs method
@@ -708,4 +714,4 @@ class rpCache:
 
 
 if __name__ == "__main__":
-    rpcache = rpCache()
+    rpcache = rpCache(db='file', print_infos=False)
