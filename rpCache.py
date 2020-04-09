@@ -218,7 +218,8 @@ class rpCache:
                     print(" ("+str(total_size(getattr(self,attribute)))+" bytes)", end = '', flush=True)
             end = time.time()
             if self.print:
-                print(" (%.2fs)" % (end - start))
+                print(" (%.2fs)" % (end - start), end = '', flush=True)
+            print()
 
         attributes = {
             'compXref': [input_cache+'/comp_xref.tsv']
@@ -231,7 +232,8 @@ class rpCache:
                     print(" ("+str(total_size(getattr(self,attribute)))+" "+str(total_size(getattr(self,'name_'+attribute)))+" bytes)", end = '', flush=True)
             end = time.time()
             if self.print:
-                print(" (%.2fs)" % (end - start))
+                print(" (%.2fs)" % (end - start), end = '', flush=True)
+            print()
 
         return True
 
