@@ -708,4 +708,4 @@ class rpCache:
 
 
 if __name__ == "__main__":
-    rpcache = rpCache('file')
+    rpcache = rpCache()
