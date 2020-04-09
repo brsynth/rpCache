@@ -79,7 +79,7 @@ class rpCache:
     # @param self The object pointer
     # @param inputPath The path to the folder that contains all the input/output files required
     # @param db Mode of storing objects ('file' or 'redis')
-    def __init__(self, db='file', print=False):
+    def __init__(self, db='file', print_infos=False):
         self.store_mode = db
         if self.store_mode!='file':
             self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0)
@@ -87,7 +87,7 @@ class rpCache:
         self.logger = logging.getLogger(__name__)
         self.logger.info('Started instance of rpCache')
 
-        self.print = print_size
+        self.print = print_infos
 
         # Common attribues
         self.convertMNXM = {'MNXM162231': 'MNXM6',
