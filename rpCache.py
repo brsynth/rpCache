@@ -228,7 +228,7 @@ class rpCache:
                         print(key, attr[key])
                 else:
                     print(attr)
-            print()
+                print()
 
         attributes = {
             'compXref': [input_cache+'/comp_xref.tsv']
@@ -251,7 +251,7 @@ class rpCache:
                         print(key, attr[key])
                 else:
                     print(attr)
-            print()
+                print()
 
         return True
 
