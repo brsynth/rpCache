@@ -220,6 +220,15 @@ class rpCache:
             if self.print:
                 print(" (%.2fs)" % (end - start), end = '', flush=True)
             print()
+            if self.print:
+                attr = getattr(self,attribute)
+                print(attribute)
+                if type(attr) is dict:
+                    for key in attr:
+                        print(key, attr[key])
+                else:
+                    print(attr)
+            print()
 
         attributes = {
             'compXref': [input_cache+'/comp_xref.tsv']
@@ -233,6 +242,15 @@ class rpCache:
             end = time.time()
             if self.print:
                 print(" (%.2fs)" % (end - start), end = '', flush=True)
+            print()
+            if self.print:
+                attr = getattr(self,attribute)
+                print(attribute)
+                if type(attr) is dict:
+                    for key in attr:
+                        print(key, attr[key])
+                else:
+                    print(attr)
             print()
 
         return True
