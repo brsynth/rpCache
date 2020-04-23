@@ -15,16 +15,13 @@ from RedisDict import RedisDict
 from argparse import ArgumentParser as argparse_ArgumentParser
 import sys
 import time
-from json import dumps as json_dumps
-from json import loads as json_loads
 from itertools import chain as itertools_chain
 sys.path.insert(0, '/home/rpCache')
-#from redisworks import Root
+
 #######################################################
 ################### rpCache  ##########################
 #######################################################
 
-from itertools import chain
 from collections import deque
 try:
     from reprlib import repr
