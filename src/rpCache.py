@@ -91,7 +91,6 @@ class rpCache:
 
         if self.store_mode!='file':
             self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
-            # self.attributes = Root(host=self.store_mode, port=6379, db=0)
             self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
             self.deprecatedMNXR_mnxr = RedisDict('deprecatedMNXR_mnxr', self.redis)
             self.mnxm_strc = RedisDict('mnxm_strc', self.redis)
@@ -103,16 +102,16 @@ class rpCache:
             self.compXref = RedisDict('compXref', self.redis)
             self.name_compXref = RedisDict('name_compXref', self.redis)
         else:
-            self.attributes.deprecatedMNXM_mnxm = None
-            self.attributes.deprecatedMNXR_mnxr = None
-            self.attributes.mnxm_strc = None
-            self.attributes.chemXref = None
-            self.attributes.rr_reactions = None
-            self.attributes.chebi_mnxm = None
+            self.deprecatedMNXM_mnxm = None
+            self.deprecatedMNXR_mnxr = None
+            self.mnxm_strc = None
+            self.chemXref = None
+            self.rr_reactions = None
+            self.chebi_mnxm = None
             # rpReader attributes
-            self.attributes.inchikey_mnxm = None
-            self.attributes.compXref = None
-            self.attributes.name_compXref = None
+            self.inchikey_mnxm = None
+            self.compXref = None
+            self.name_compXref = None
 
         #given by Thomas
         self.logger = logging.getLogger(__name__)
@@ -185,54 +184,8 @@ class rpCache:
 
         return True
 
-    # def __getattr__(self, attr, key=None):
-    #     print(attr, key)
-    #     if self.store_mode=='db':
-    #         try:
-    #             return json_loads(self.redis.hmget(attr, key)[0])
-    #         # Non yet initialized attribute
-    #         except redis.exceptions.DataError:
-    #             return None
-    #     else:
-    #         # The attribute is not a dictionary
-    #         if key==None:
-    #             return getattr(self, attr)
-    #         else:
-    #             return getattr(self, attr)[key]
-
     def populate_cache(self):
         input_cache = self.dirname+'/input_cache'
-        # attr_names = {
-        #     'deprecatedMNXM_mnxm': [input_cache+'/chem_xref.tsv'],
-        #     'deprecatedMNXR_mnxr': [input_cache+'/reac_xref.tsv'],
-        #     'mnxm_strc': [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv'],
-        #     'chemXref': [input_cache+'/chem_xref.tsv'],
-        #     'chebi_mnxm': [],
-        #     'rr_reactions': [input_cache+'/rules_rall.tsv'],
-        #     'inchikey_mnxm': []
-        # }
-        # for attr_name in attr_names:
-        #
-        #     if self.store_mode=='file':
-        #         filename = self.dirname+'/cache/'+attr_name+'.pickle'
-        #         # The cache already exists into file
-        #         if os.path.isfile(filename):
-        #             print("Loading "+attr_name+" from "+filename+"...", end = '', flush=True)
-        #             data = self.load_cache_from_file(filename)
-        #             setattr(self, attr_name, data)
-        #             self.print_OK()
-        #         else: # The cache does not exist yet into file
-        #             data = self.gen_cache(attr_name, attr_names[attr_name])
-        #             print("Storing "+attr_name+" to file...", end = '', flush=True)
-        #             self.store_cache_to_file(data, filename)
-        #             self.print_OK()
-        #
-        #     else: # Cache mode is 'db'
-        #         if not self.cache_is_in_db(attr_name):
-        #             data = self.gen_cache(attr_name, attr_names[attr_name])
-        #             print("Storing "+attr_name+" to db...", end = '', flush=True)
-        #             self.store_cache_to_db(attr_name, data)
-        #             self.print_OK()
 
         attr_names = {
         #   KEY                  : [attribute(s) name(s) list, args list to the function]
@@ -247,6 +200,8 @@ class rpCache:
         }
         for attr_name in attr_names:
 
+            start_time = time.time()
+
             if self.store_mode=='file':
                 # The cache already exists into files
                 if self.files_exist(attr_names[attr_name][0]):
@@ -256,35 +211,34 @@ class rpCache:
                         print("Loading "+_attr_name+" from "+filename+"...", end = '', flush=True)
                         data = self.load_cache_from_file(filename)
                         setattr(self, _attr_name, data)
-                        self.print_OK()
                 else: # The cache does not exist yet into files
                     data = self.gen_cache(attr_names[attr_name][0], attr_names[attr_name][1])
                     for i in range(len(data)):
                         _attr_name = attr_names[attr_name][0][i]
-                        setattr(self, _attr_name, data)
+                        setattr(self, _attr_name, data[i])
                         filename = self.dirname+'/cache/'+_attr_name+'.pickle'
                         print("Storing "+_attr_name+" to "+filename+"...", end = '', flush=True)
                         self.store_cache_to_file(data[i], filename)
-                        self.print_OK()
 
             else: # Cache mode is 'db'
                 if not self.db_entries_exist(attr_names[attr_name][0]):
                     data = self.gen_cache(attr_names[attr_name][0], attr_names[attr_name][1])
-                    print(len(data))
                     for i in range(len(data)):
                         _attr_name = attr_names[attr_name][0][i]
                         print("Storing "+_attr_name+" to db...", end = '', flush=True)
                         self.store_cache_to_db(_attr_name, data[i])
-                        self.print_OK()
                 else:
                     print(" ".join(attr_names[attr_name][0])+" already in db ", end = '', flush=True)
-                    self.print_OK()
+
+            end_time = time.time()
+            self.print_OK(end_time-start_time)
 
 
-    def print_OK(self):
+    def print_OK(self, time=-1):
         sys.stdout.write("\033[0;32m") # Green
         print(" OK", end = '', flush=True)
         sys.stdout.write("\033[0;0m") # Reset
+        if time!=-1: print(" (%.2fs)" % time, end = '', flush=True)
         print()
 
     def print_FAILED(self):
