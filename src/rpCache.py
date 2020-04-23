@@ -270,6 +270,7 @@ class rpCache:
             else: # Cache mode is 'db'
                 if not self.db_entries_exist(attr_names[attr_name][0]):
                     data = self.gen_cache(attr_names[attr_name][0], attr_names[attr_name][1])
+                    print(len(data))
                     for i in range(len(data)):
                         _attr_name = attr_names[attr_name][0][i]
                         print("Storing "+_attr_name+" to db...", end = '', flush=True)
@@ -279,72 +280,6 @@ class rpCache:
                     print(" ".join(attr_names[attr_name][0])+" already in db ", end = '', flush=True)
                     self.print_OK()
 
-                # for i in range(len(attr_names[attr_name][0])):
-                #     _attr_name = attr_names[attr_name][0][i]
-                #     setattr(self, _attr_name, RedisDict.RedisDict(_attr_name, self.redis))
-
-
-
-        #     start = time.time()
-        #     self._processAttribute(attr_name, attr_names[attr_name])
-        #     if self.print:
-        #         print(" ("+str(total_size(getattr(self,attr_name)))+" bytes)", end = '', flush=True)
-        #     end = time.time()
-        #     if self.print:
-        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
-        #     print()
-        #     if self.print:
-        #         attr = getattr(self,attr_name)
-        #         print(attribute)
-        #         if type(attr) is dict:
-        #             for key in attr:
-        #                 print(key, attr[key])
-        #         else:
-        #             print(attr)
-        #         print()
-        #
-        #
-        # for attr_name in attr_names:
-        #     start = time.time()
-        #     self._processAttribute(attr_name, attr_names[attr_name])
-        #     if self.print:
-        #         print(" ("+str(total_size(getattr(self,attr_name)))+" bytes)", end = '', flush=True)
-        #     end = time.time()
-        #     if self.print:
-        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
-        #     print()
-        #     if self.print:
-        #         attr = getattr(self,attr_name)
-        #         print(attribute)
-        #         if type(attr) is dict:
-        #             for key in attr:
-        #                 print(key, attr[key])
-        #         else:
-        #             print(attr)
-        #         print()
-        #
-        # attributes = {
-        #     'compXref': [input_cache+'/comp_xref.tsv']
-        # }
-        # for attribute in attributes:
-        #     start = time.time()
-        #     if not getattr(self, attribute):
-        #         self._processAttribute2([attribute, 'name_'+attribute], dirname, attributes[attribute])
-        #         if self.print:
-        #             print(" ("+str(total_size(getattr(self,attribute)))+" "+str(total_size(getattr(self,'name_'+attribute)))+" bytes)", end = '', flush=True)
-        #     end = time.time()
-        #     if self.print:
-        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
-        #     print()
-        #     if self.print:
-        #         attr = getattr(self,attribute)
-        #         print(attribute)
-        #         if type(attr) is dict:
-        #             for key in attr:
-        #                 print(key, attr[key])
-        #         else:
-        #             print(attr)
-        #         print()
 
     def print_OK(self):
         sys.stdout.write("\033[0;32m") # Green
@@ -358,27 +293,6 @@ class rpCache:
         sys.stdout.write("\033[0;0m") # Reset
         print()
 
-    # def gen_cache(self, attr_name, args):
-    #     if self.print:
-    #         print("attribute: ", attr_name)
-    #     try:
-    #
-    #         print("Generating "+attr_name+"...", end = '', flush=True)
-    #         # Choose method according to attribute name
-    #         method = getattr(self, '_m_'+attr_name)
-    #         if self.print:
-    #             print("method: ", method)
-    #         # Apply method and expand 'args' list as arguments
-    #         result = method(*args)
-    #         self.print_OK()
-    #
-    #         return result
-    #
-    #     except:
-    #         self.print_FAILED()
-    #         raise
-
-
     def gen_cache(self, attr_names, args):
         try:
             results = []
@@ -388,7 +302,7 @@ class rpCache:
             # Apply method and expand 'args' list as arguments
             # Put results in a list
             results = [method(*args)]
-            if type(results[0])=='tuple':
+            if type(results[0]) is tuple:
                 results = list(itertools_chain(results[0]))
             self.print_OK()
             return results
@@ -415,10 +329,6 @@ class rpCache:
 
     def store_cache_to_db(self, attr_name, data):
         setattr(self, attr_name, RedisDict(attr_name, self.redis, data))
-        # setattr(self.attributes, attr_name, {'__init__': '__fake__'})
-        # for key in data:
-            # getattr(self, attr_name)[key] = data[key]
-        # self.attributes.flush()
 
     def files_exist(self, attr_names):
         files_exist = True
@@ -722,7 +632,7 @@ class rpCache:
 #    def _m_chebi_mnxm(self, chemXref):
     def _m_chebi_mnxm(self):
         chebi_mnxm = {}
-        for mnxm in self.chemXref.keys():
+        for mnxm in self.chemXref:
             if 'chebi' in self.chemXref[mnxm]:
                 for c in self.chemXref[mnxm]['chebi']:
                     chebi_mnxm[c] = mnxm
@@ -775,11 +685,7 @@ class rpCache:
 
     def _m_inchikey_mnxm(self):
         inchikey_mnxm = {}
-        for mnxm in self.mnxm_strc.keys():
-            print('mnxm_strc', mnxm, self.mnxm_strc[mnxm], self.mnxm_strc[mnxm]['inchikey'])
-            print(inchikey_mnxm)
-            print('self.mnxm_strc['+mnxm+'][\'inchikey\'] in inchikey_mnxm: ', self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm)
-            input("Press Enter to continue...")
+        for mnxm in self.mnxm_strc:
             inchikey = self.mnxm_strc[mnxm]['inchikey']
             if not inchikey: inchikey = 'NO_INCHIKEY'
             if not inchikey in inchikey_mnxm:
