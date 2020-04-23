@@ -7,6 +7,6 @@ RUN python -m pip install --upgrade pip \
 
 WORKDIR /home
 
-COPY rpCache.py .
+COPY src rpCache
 
 RUN ldconfig

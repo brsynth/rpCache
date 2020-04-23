@@ -7,22 +7,37 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     image: brsynth/${COMPOSE_PROJECT_NAME}
-    command: python3.8 rpCache.py
+    command: python3.8 rpCache/rpCache.py
     networks:
       - db
-    # depends_on:
-    #   - db
+    depends_on:
+      - db
     volumes:
       - input_cache:/home/input_cache
       - cache:/home/cache
 
+  clean-cache:
+    image: busybox
+    command: sh -c "rm -f /cache/*"
+    volumes:
+      - cache:/cache
+    network_mode: "none"
+
+  clean-input-cache:
+    image: busybox
+    command: sh -c "rm -f /input_cache/*"
+    volumes:
+      - input_cache:/input_cache
+    network_mode: "none"
+
   db:
     image: redis:5-alpine
-    command: redis-server --appendonly yes
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
     networks:
-      - db
+      db:
     volumes:
       - redis:/data
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
 
   backup:
     image: alpine
@@ -55,4 +70,3 @@ volumes:
 
 networks:
   db:
-    name: db_pickles
