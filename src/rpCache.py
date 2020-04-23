@@ -11,12 +11,15 @@ import re
 import tarfile
 import shutil
 import redis
+from RedisDict import RedisDict
 from argparse import ArgumentParser as argparse_ArgumentParser
 import sys
 import time
 from json import dumps as json_dumps
 from json import loads as json_loads
-
+from itertools import chain as itertools_chain
+sys.path.insert(0, '/home/rpCache')
+#from redisworks import Root
 #######################################################
 ################### rpCache  ##########################
 #######################################################
@@ -83,9 +86,34 @@ class rpCache:
     # @param inputPath The path to the folder that contains all the input/output files required
     # @param db Mode of storing objects ('file' or 'redis')
     def __init__(self, db='file', print_infos=False):
+
         self.store_mode = db
+
         if self.store_mode!='file':
-            self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0)
+            self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
+            # self.attributes = Root(host=self.store_mode, port=6379, db=0)
+            self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
+            self.deprecatedMNXR_mnxr = RedisDict('deprecatedMNXR_mnxr', self.redis)
+            self.mnxm_strc = RedisDict('mnxm_strc', self.redis)
+            self.chemXref = RedisDict('chemXref', self.redis)
+            self.rr_reactions = RedisDict('rr_reactions', self.redis)
+            self.chebi_mnxm = RedisDict('chebi_mnxm', self.redis)
+            # rpReader attributes
+            self.inchikey_mnxm = RedisDict('inchikey_mnxm', self.redis)
+            self.compXref = RedisDict('compXref', self.redis)
+            self.name_compXref = RedisDict('name_compXref', self.redis)
+        else:
+            self.attributes.deprecatedMNXM_mnxm = None
+            self.attributes.deprecatedMNXR_mnxr = None
+            self.attributes.mnxm_strc = None
+            self.attributes.chemXref = None
+            self.attributes.rr_reactions = None
+            self.attributes.chebi_mnxm = None
+            # rpReader attributes
+            self.attributes.inchikey_mnxm = None
+            self.attributes.compXref = None
+            self.attributes.name_compXref = None
+
         #given by Thomas
         self.logger = logging.getLogger(__name__)
         self.logger.info('Started instance of rpCache')
@@ -100,17 +128,9 @@ class rpCache:
                             'MNXM145523': 'MNXM57',
                             'MNXM57425': 'MNXM9',
                             'MNXM137': 'MNXM588022'}
-        self.deprecatedMNXM_mnxm = None
-        self.deprecatedMNXR_mnxr = None
-        self.mnxm_strc = None
-        self.chemXref = None
-        self.rr_reactions = None
-        self.chebi_mnxm = None
 
-        # rpReader attributes
-        self.inchikey_mnxm = None
-        self.compXref = None
-        self.name_compXref = None
+        self.dirname = os.path.dirname(os.path.abspath( __file__ ))+"/.."
+
 
         if not self.loadCache():
             raise ValueError
@@ -146,115 +166,22 @@ class rpCache:
     # @return Boolean detemining the success of the function or not
     def loadCache(self, fetchInputFiles=False):
 
-        dirname = os.path.dirname(os.path.abspath( __file__ ))
 
         #################### make the local folders ############################
         # input_cache
-        if not os.path.isdir(dirname+'/input_cache'):
-            os.mkdir(dirname+'/input_cache')
+        if not os.path.isdir(self.dirname+'/input_cache'):
+            os.mkdir(self.dirname+'/input_cache')
         # cache
-        if not os.path.isdir(dirname+'/cache'):
-            os.mkdir(dirname+'/cache')
+        if not os.path.isdir(self.dirname+'/cache'):
+            os.mkdir(self.dirname+'/cache')
 
         # ###################### Fetch the files if necessary ######################
-        url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
-
-        # 3xCommon + rpReader
-        for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
-                print("Downloading "+file+"...", end = '', flush=True)
-                start = time.time()
-                urllib.request.urlretrieve(url+file, dirname+'/input_cache/'+file)
-                end = time.time()
-                print(" (%.2fs)" % (end - start))
+        self.fetch_input_files(fetchInputFiles)
 
 
-        #TODO: need to add this file to the git or another location
-        for file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
-            if not os.path.isfile(dirname+'/input_cache/'+file) or fetchInputFiles:
-                print("Downloading "+file+"...", end = '', flush=True)
-                start = time.time()
-                urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
-                                           dirname+'/input_cache/rr02_more_data.tar.gz')
-                end = time.time()
-                print(" (%.2fs)" % (end - start))
-                tar = tarfile.open(dirname+'/input_cache/rr02_more_data.tar.gz', 'r:gz')
-                tar.extractall(dirname+'/input_cache/')
-                tar.close()
-                shutil.move(dirname+'/input_cache/rr02_more_data/compounds.tsv',
-                            dirname+'/input_cache/rr_compounds.tsv')
-                shutil.move(dirname+'/input_cache/rr02_more_data/rxn_recipes.tsv',
-                            dirname+'/input_cache/')
-                os.remove(dirname+'/input_cache/rr02_more_data.tar.gz')
-                shutil.rmtree(dirname+'/input_cache/rr02_more_data')
-
-        if not os.path.isfile(dirname+'/input_cache/rules_rall.tsv') or fetchInputFiles:
-            print("Downloading rules_rall.tsv...", end = '', flush=True)
-            start = time.time()
-            urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
-                                       dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
-            end = time.time()
-            print(" (%.2fs)" % (end - start))
-            tar = tarfile.open(dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
-            tar.extractall(dirname+'/input_cache/')
-            tar.close()
-            shutil.move(dirname+'/input_cache/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', dirname+'/input_cache/rules_rall.tsv')
-            os.remove(dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
-            shutil.rmtree(dirname+'/input_cache/retrorules_rr02_rp3_hs')
 
         ###################### Populate the cache #################################
-        input_cache = dirname+'/input_cache'
-        attributes = {
-            'deprecatedMNXM_mnxm': [input_cache+'/chem_xref.tsv'],
-            'deprecatedMNXR_mnxr': [input_cache+'/reac_xref.tsv'],
-            'mnxm_strc': [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv'],
-            'chemXref': [input_cache+'/chem_xref.tsv'],
-            'chebi_mnxm': [],
-            'rr_reactions': [input_cache+'/rules_rall.tsv'],
-            'inchikey_mnxm': []
-        }
-        for attribute in attributes:
-            start = time.time()
-            if not getattr(self, attribute):
-                self._processAttribute(attribute, dirname, attributes[attribute])
-                if self.print:
-                    print(" ("+str(total_size(getattr(self,attribute)))+" bytes)", end = '', flush=True)
-            end = time.time()
-            if self.print:
-                print(" (%.2fs)" % (end - start), end = '', flush=True)
-            print()
-            if self.print:
-                attr = getattr(self,attribute)
-                print(attribute)
-                if type(attr) is dict:
-                    for key in attr:
-                        print(key, attr[key])
-                else:
-                    print(attr)
-                print()
-
-        attributes = {
-            'compXref': [input_cache+'/comp_xref.tsv']
-        }
-        for attribute in attributes:
-            start = time.time()
-            if not getattr(self, attribute):
-                self._processAttribute2([attribute, 'name_'+attribute], dirname, attributes[attribute])
-                if self.print:
-                    print(" ("+str(total_size(getattr(self,attribute)))+" "+str(total_size(getattr(self,'name_'+attribute)))+" bytes)", end = '', flush=True)
-            end = time.time()
-            if self.print:
-                print(" (%.2fs)" % (end - start), end = '', flush=True)
-            print()
-            if self.print:
-                attr = getattr(self,attribute)
-                print(attribute)
-                if type(attr) is dict:
-                    for key in attr:
-                        print(key, attr[key])
-                else:
-                    print(attr)
-                print()
+        self.populate_cache()
 
         return True
 
@@ -273,149 +200,290 @@ class rpCache:
     #         else:
     #             return getattr(self, attr)[key]
 
+    def populate_cache(self):
+        input_cache = self.dirname+'/input_cache'
+        # attr_names = {
+        #     'deprecatedMNXM_mnxm': [input_cache+'/chem_xref.tsv'],
+        #     'deprecatedMNXR_mnxr': [input_cache+'/reac_xref.tsv'],
+        #     'mnxm_strc': [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv'],
+        #     'chemXref': [input_cache+'/chem_xref.tsv'],
+        #     'chebi_mnxm': [],
+        #     'rr_reactions': [input_cache+'/rules_rall.tsv'],
+        #     'inchikey_mnxm': []
+        # }
+        # for attr_name in attr_names:
+        #
+        #     if self.store_mode=='file':
+        #         filename = self.dirname+'/cache/'+attr_name+'.pickle'
+        #         # The cache already exists into file
+        #         if os.path.isfile(filename):
+        #             print("Loading "+attr_name+" from "+filename+"...", end = '', flush=True)
+        #             data = self.load_cache_from_file(filename)
+        #             setattr(self, attr_name, data)
+        #             self.print_OK()
+        #         else: # The cache does not exist yet into file
+        #             data = self.gen_cache(attr_name, attr_names[attr_name])
+        #             print("Storing "+attr_name+" to file...", end = '', flush=True)
+        #             self.store_cache_to_file(data, filename)
+        #             self.print_OK()
+        #
+        #     else: # Cache mode is 'db'
+        #         if not self.cache_is_in_db(attr_name):
+        #             data = self.gen_cache(attr_name, attr_names[attr_name])
+        #             print("Storing "+attr_name+" to db...", end = '', flush=True)
+        #             self.store_cache_to_db(attr_name, data)
+        #             self.print_OK()
 
-    def _processAttribute(self, attribute, dirname, args):
-        if self.print:
-            print("attribute: ", attribute)
-        try:
-            # Check if attribute is set
-            if self.checkAttribute(attribute, dirname):
-                print("Loading "+attribute+" from "+self.store_mode+"...", end = '', flush=True)
-                result = self.loadAttribute(attribute, dirname)
-            else:
-                print("Generating "+attribute+" to "+self.store_mode+"...", end = '', flush=True)
-                # Choose method according to attribute name
-                method = getattr(self, '_m_'+attribute)
-                if self.print:
-                    print("method: ", method)
-                # Apply method and expand 'args' list as arguments
-                result = method(*args)
-                # Store pickle
-                self.storeAttribute(attribute, result, dirname)
-            sys.stdout.write("\033[0;32m") # Green
-            print(" OK", end = '', flush=True)
-            sys.stdout.write("\033[0;0m") # Reset
-        except:
-            sys.stdout.write("\033[1;31m") # Red
-            print(" Failed")
-            sys.stdout.write("\033[0;0m") # Reset
-            raise
-        # Set attribute to value
-        setattr(self, attribute, result)
-        # if self.print:
-        #     print("result: ", result)
+        attr_names = {
+        #   KEY                  : [attribute(s) name(s) list, args list to the function]
+            'deprecatedMNXM_mnxm': [['deprecatedMNXM_mnxm'], [input_cache+'/chem_xref.tsv']],
+            'deprecatedMNXR_mnxr': [['deprecatedMNXR_mnxr'], [input_cache+'/reac_xref.tsv']],
+            'mnxm_strc': [['mnxm_strc'], [input_cache+'/rr_compounds.tsv', input_cache+'/chem_prop.tsv']],
+            'chemXref': [['chemXref'], [input_cache+'/chem_xref.tsv']],
+            'chebi_mnxm': [['chebi_mnxm'], []],
+            'rr_reactions': [['rr_reactions'], [input_cache+'/rules_rall.tsv']],
+            'inchikey_mnxm': [['inchikey_mnxm'], []],
+            'compXref': [['compXref', 'name_compXref'], [input_cache+'/comp_xref.tsv']]
+        }
+        for attr_name in attr_names:
+
+            if self.store_mode=='file':
+                # The cache already exists into files
+                if self.files_exist(attr_names[attr_name][0]):
+                    for i in range(len(attr_names[attr_name][0])):
+                        _attr_name = attr_names[attr_name][0][i]
+                        filename = self.dirname+'/cache/'+_attr_name+'.pickle'
+                        print("Loading "+_attr_name+" from "+filename+"...", end = '', flush=True)
+                        data = self.load_cache_from_file(filename)
+                        setattr(self, _attr_name, data)
+                        self.print_OK()
+                else: # The cache does not exist yet into files
+                    data = self.gen_cache(attr_names[attr_name][0], attr_names[attr_name][1])
+                    for i in range(len(data)):
+                        _attr_name = attr_names[attr_name][0][i]
+                        setattr(self, _attr_name, data)
+                        filename = self.dirname+'/cache/'+_attr_name+'.pickle'
+                        print("Storing "+_attr_name+" to "+filename+"...", end = '', flush=True)
+                        self.store_cache_to_file(data[i], filename)
+                        self.print_OK()
+
+            else: # Cache mode is 'db'
+                if not self.db_entries_exist(attr_names[attr_name][0]):
+                    data = self.gen_cache(attr_names[attr_name][0], attr_names[attr_name][1])
+                    for i in range(len(data)):
+                        _attr_name = attr_names[attr_name][0][i]
+                        print("Storing "+_attr_name+" to db...", end = '', flush=True)
+                        self.store_cache_to_db(_attr_name, data[i])
+                        self.print_OK()
+                else:
+                    print(" ".join(attr_names[attr_name][0])+" already in db ", end = '', flush=True)
+                    self.print_OK()
+
+                # for i in range(len(attr_names[attr_name][0])):
+                #     _attr_name = attr_names[attr_name][0][i]
+                #     setattr(self, _attr_name, RedisDict.RedisDict(_attr_name, self.redis))
 
 
-    # Process with two outputs method
-    def _processAttribute2(self, attributes, dirname, args):
+
+        #     start = time.time()
+        #     self._processAttribute(attr_name, attr_names[attr_name])
+        #     if self.print:
+        #         print(" ("+str(total_size(getattr(self,attr_name)))+" bytes)", end = '', flush=True)
+        #     end = time.time()
+        #     if self.print:
+        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
+        #     print()
+        #     if self.print:
+        #         attr = getattr(self,attr_name)
+        #         print(attribute)
+        #         if type(attr) is dict:
+        #             for key in attr:
+        #                 print(key, attr[key])
+        #         else:
+        #             print(attr)
+        #         print()
+        #
+        #
+        # for attr_name in attr_names:
+        #     start = time.time()
+        #     self._processAttribute(attr_name, attr_names[attr_name])
+        #     if self.print:
+        #         print(" ("+str(total_size(getattr(self,attr_name)))+" bytes)", end = '', flush=True)
+        #     end = time.time()
+        #     if self.print:
+        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
+        #     print()
+        #     if self.print:
+        #         attr = getattr(self,attr_name)
+        #         print(attribute)
+        #         if type(attr) is dict:
+        #             for key in attr:
+        #                 print(key, attr[key])
+        #         else:
+        #             print(attr)
+        #         print()
+        #
+        # attributes = {
+        #     'compXref': [input_cache+'/comp_xref.tsv']
+        # }
+        # for attribute in attributes:
+        #     start = time.time()
+        #     if not getattr(self, attribute):
+        #         self._processAttribute2([attribute, 'name_'+attribute], dirname, attributes[attribute])
+        #         if self.print:
+        #             print(" ("+str(total_size(getattr(self,attribute)))+" "+str(total_size(getattr(self,'name_'+attribute)))+" bytes)", end = '', flush=True)
+        #     end = time.time()
+        #     if self.print:
+        #         print(" (%.2fs)" % (end - start), end = '', flush=True)
+        #     print()
+        #     if self.print:
+        #         attr = getattr(self,attribute)
+        #         print(attribute)
+        #         if type(attr) is dict:
+        #             for key in attr:
+        #                 print(key, attr[key])
+        #         else:
+        #             print(attr)
+        #         print()
+
+    def print_OK(self):
+        sys.stdout.write("\033[0;32m") # Green
+        print(" OK", end = '', flush=True)
+        sys.stdout.write("\033[0;0m") # Reset
+        print()
+
+    def print_FAILED(self):
+        sys.stdout.write("\033[1;31m") # Red
+        print(" Failed")
+        sys.stdout.write("\033[0;0m") # Reset
+        print()
+
+    # def gen_cache(self, attr_name, args):
+    #     if self.print:
+    #         print("attribute: ", attr_name)
+    #     try:
+    #
+    #         print("Generating "+attr_name+"...", end = '', flush=True)
+    #         # Choose method according to attribute name
+    #         method = getattr(self, '_m_'+attr_name)
+    #         if self.print:
+    #             print("method: ", method)
+    #         # Apply method and expand 'args' list as arguments
+    #         result = method(*args)
+    #         self.print_OK()
+    #
+    #         return result
+    #
+    #     except:
+    #         self.print_FAILED()
+    #         raise
+
+
+    def gen_cache(self, attr_names, args):
         try:
             results = []
-            # Check if attributes are set
-            check = True
-            i=0
-            while check and i<len(attributes):
-                check = check and self.checkAttribute(attributes[i], dirname)
-                i+=1
-            if check:
-                print("Loading "+" ".join(attributes)+" from "+self.store_mode+"...", end = '', flush=True)
-                for i in range(len(attributes)):
-                    results += [self.loadAttribute(attributes[i], dirname)]
-            else:
-                print("Generating "+" ".join(attributes)+" to "+self.store_mode+"...", end = '', flush=True)
-                # Choose method according to attribute name
-                method = getattr(self, '_m_'+attributes[0])
-                # Apply method and expand 'args' list as arguments
-                # Put results in a list
-                results = method(*args)
-                for i in range(len(results)):
-                    # Store pickle
-                    self.storeAttribute(attributes[i], results[i], dirname)
-            sys.stdout.write("\033[0;32m") # Green
-            print(" OK", end = '', flush=True)
-            sys.stdout.write("\033[0;0m") # Reset
+            print("Generating "+" ".join(attr_names)+"...", end = '', flush=True)
+            # Choose method according to attribute name
+            method = getattr(self, '_m_'+attr_names[0])
+            # Apply method and expand 'args' list as arguments
+            # Put results in a list
+            results = [method(*args)]
+            if type(results[0])=='tuple':
+                results = list(itertools_chain(results[0]))
+            self.print_OK()
+            return results
         except:
-            sys.stdout.write("\033[1;31m") # Red
-            print(" Failed")
-            sys.stdout.write("\033[0;0m") # Reset
+            self.print_FAILED()
             raise
-        # Set attribute to value
-        for i in range(len(results)):
-            setattr(self, attributes[i], results[i])
 
 
-    # def storePickle(self, pickle_key, pickle_obj, dirname='./', gzip=False):
-    #     if self.store_mode=='redis':
-    #         self._storePickleToDB(pickle_key, pickle_obj)
-    #     else:
-    #         self._storePickleToFile(pickle_key, pickle_obj, dirname, gzip)
-
-    def storeAttribute(self, attribute, data, dirname='./', gzip=False):
-        if self.store_mode=='db':
-            self._storeAttributeToDB(attribute, data)
+    def load_cache_from_file(self, filename, gzip=False):
+        if gzip:
+            return pickle_load(gzip.open(filename, 'rb'))
         else:
-            self._storePickleToFile(attribute, pickle_dumps(data), dirname, gzip)
+            return pickle_load(open(filename, 'rb'))
 
-    def _storePickleToFile(self, pickle_key, pickle_obj, dirname, gzip):
-        filename = dirname+'/cache/'+pickle_key
+    def store_cache_to_file(self, data, filename, gzip=False):
+        pickle_obj = pickle_dumps(data)
         if gzip:
             filename += '.gz'
             with gzip.open(filename, "wb") as f:
             	f.write(pickle_obj)
         else:
             with open(filename, "wb") as f:
-            	f.write(pickle_obj)
+             	f.write(pickle_obj)
 
-    def _storePickleToDB(self, pickle_key, pickle_obj):
-        self.redis.set(pickle_key, pickle_obj)
+    def store_cache_to_db(self, attr_name, data):
+        setattr(self, attr_name, RedisDict(attr_name, self.redis, data))
+        # setattr(self.attributes, attr_name, {'__init__': '__fake__'})
+        # for key in data:
+            # getattr(self, attr_name)[key] = data[key]
+        # self.attributes.flush()
 
-    def _storeAttributeToDB(self, attribute, data):
-        if type(data) is dict:
-            self.redis.hmset(attribute, {k: json_dumps(v) for k, v in data.items()})
-            # self.redis.hmset(attribute, data)
-        else:
-            self.redis.set(attribute, data)
+    def files_exist(self, attr_names):
+        files_exist = True
+        i = 0
+        while files_exist and i < len(attr_names):
+            filename = self.dirname+'/cache/'+attr_names[i]+'.pickle'
+            files_exist = files_exist and os.path.isfile(filename)
+            i += 1
+        return files_exist
+
+    def db_entries_exist(self, attr_names):
+        db_entries_exist = True
+        i = 0
+        while db_entries_exist and i < len(attr_names):
+            db_entries_exist = db_entries_exist and getattr(self, attr_names[i]).exists()
+            i += 1
+        return db_entries_exist
 
 
-    def loadPickle(self, pickle_key, dirname='./', gz=False):
-        if self.store_mode=='db':
-            return self._loadPickleFromDB(pickle_key, gz)
-        else:
-            return self._loadPickleFromFile(pickle_key, dirname, gz)
+    def fetch_input_files(self, fetchInputFiles=False):
+        url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
-    def loadAttribute(self, attribute, dirname='./', gz=False):
-        return self.loadPickle(attribute+'.pickle', dirname, gz)
+        # 3xCommon + rpReader
+        for file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
+            if not os.path.isfile(self.dirname+'/input_cache/'+file) or fetchInputFiles:
+                print("Downloading "+file+"...", end = '', flush=True)
+                start = time.time()
+                urllib.request.urlretrieve(url+file, self.dirname+'/input_cache/'+file)
+                end = time.time()
+                print(" (%.2fs)" % (end - start))
 
-    def _loadPickleFromFile(self, pickle_key, dirname, gz=False):
-        filename = dirname+'/cache/'+pickle_key
-        if gz:
-            filename += '.gz'
-            return pickle_load(gzip.open(filename, 'rb'))
-        else:
-            return pickle_load(open(filename, 'rb'))
 
-    # def _loadPickleFromFile(self, filename, gz=False):
-    #     if gzip:
-    #         return pickle_load(gzip.open(filename, 'rb'))
-    #     else:
-    #         return pickle_load(open(filename, 'rb'))
+        #TODO: need to add this file to the git or another location
+        for file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
+            if not os.path.isfile(self.dirname+'/input_cache/'+file) or fetchInputFiles:
+                print("Downloading "+file+"...", end = '', flush=True)
+                start = time.time()
+                urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
+                                           self.dirname+'/input_cache/rr02_more_data.tar.gz')
+                end = time.time()
+                print(" (%.2fs)" % (end - start))
+                tar = tarfile.open(self.dirname+'/input_cache/rr02_more_data.tar.gz', 'r:gz')
+                tar.extractall(self.dirname+'/input_cache/')
+                tar.close()
+                shutil.move(self.dirname+'/input_cache/rr02_more_data/compounds.tsv',
+                            self.dirname+'/input_cache/rr_compounds.tsv')
+                shutil.move(self.dirname+'/input_cache/rr02_more_data/rxn_recipes.tsv',
+                            self.dirname+'/input_cache/')
+                os.remove(self.dirname+'/input_cache/rr02_more_data.tar.gz')
+                shutil.rmtree(self.dirname+'/input_cache/rr02_more_data')
 
-    def _loadPickleFromDB(self, pickle_key, gz=False):
-        return pickle_loads(self.redis.get(pickle_key))
+        if not os.path.isfile(self.dirname+'/input_cache/rules_rall.tsv') or fetchInputFiles:
+            print("Downloading rules_rall.tsv...", end = '', flush=True)
+            start = time.time()
+            urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
+                                       self.dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
+            end = time.time()
+            print(" (%.2fs)" % (end - start))
+            tar = tarfile.open(self.dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
+            tar.extractall(self.dirname+'/input_cache/')
+            tar.close()
+            shutil.move(self.dirname+'/input_cache/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', self.dirname+'/input_cache/rules_rall.tsv')
+            os.remove(self.dirname+'/input_cache/retrorules_rr02_rp3_hs.tar.gz')
+            shutil.rmtree(self.dirname+'/input_cache/retrorules_rr02_rp3_hs')
 
-    def setPickle(self, attribute, data):
-        attribute = data
-
-    def getPickle(self, attribute):
-        return attribute
-
-    def checkAttribute(self, attribute, dirname):
-        return self.checkPickle(attribute+'.pickle', dirname)
-
-    def checkPickle(self, pickle_key, dirname):
-        if self.store_mode=='db':
-            return self.redis.exists(pickle_key)
-        else:
-            return os.path.isfile(dirname+'/cache/'+pickle_key)
 
 
     ## Convert chemical depiction to others type of depictions
@@ -514,10 +582,11 @@ class rpCache:
         return deprecatedMNX_mnx
 
     def _m_deprecatedMNXM_mnxm(self, chem_xref_path):
-        deprecatedMNX_mnx = self._deprecatedMNX(chem_xref_path)
-        deprecatedMNX_mnx.update(self.convertMNXM)
-        deprecatedMNX_mnx['MNXM01'] = 'MNXM1'
-        return deprecatedMNX_mnx
+        deprecatedMNXM_mnxm = {}
+        deprecatedMNXM_mnxm = self._deprecatedMNX(chem_xref_path)
+        deprecatedMNXM_mnxm.update(self.convertMNXM)
+        deprecatedMNXM_mnxm['MNXM01'] = 'MNXM1'
+        return deprecatedMNXM_mnxm
 
     ## Function to parse the reac_xref.tsv file of MetanetX
     #
@@ -653,7 +722,7 @@ class rpCache:
 #    def _m_chebi_mnxm(self, chemXref):
     def _m_chebi_mnxm(self):
         chebi_mnxm = {}
-        for mnxm in self.chemXref:
+        for mnxm in self.chemXref.keys():
             if 'chebi' in self.chemXref[mnxm]:
                 for c in self.chemXref[mnxm]['chebi']:
                     chebi_mnxm[c] = mnxm
@@ -668,13 +737,13 @@ class rpCache:
     #  @param path The input file path.
     #  @return rule Dictionnary describing each reaction rule
     def _m_rr_reactions(self, rules_rall_path):
+        rr_reactions = {}
         try:
             #with open(rules_rall_path, 'r') as f:
             #    reader = csv.reader(f, delimiter = '\t')
             #    next(reader)
             #    rule = {}
             #    for row in reader:
-            rule = {}
             for row in csv.DictReader(open(rules_rall_path), delimiter='\t'):
                 #NOTE: as of now all the rules are generated using MNX
                 #but it may be that other db are used, we are handling this case
@@ -690,26 +759,32 @@ class rpCache:
                     #WARNING: one reaction rule can have multiple reactions associated with them
                     #To change when you can set subpaths from the mutliple numbers of
                     #we assume that the reaction rule has multiple unique reactions associated
-                    if row['# Rule_ID'] not in rule:
-                        rule[row['# Rule_ID']] = {}
-                    if row['# Rule_ID'] in rule[row['# Rule_ID']]:
+                    if row['# Rule_ID'] not in rr_reactions:
+                        rr_reactions[row['# Rule_ID']] = {}
+                    if row['# Rule_ID'] in rr_reactions[row['# Rule_ID']]:
                         self.logger.warning('There is already reaction '+str(row['# Rule_ID'])+' in reaction rule '+str(row['# Rule_ID']))
-                    rule[row['# Rule_ID']][row['Reaction_ID']] = {'rule_id': row['# Rule_ID'], 'rule_score': float(row['Score_normalized']), 'reac_id': self._checkMNXRdeprecated(row['Reaction_ID']), 'subs_id': self._checkMNXMdeprecated(row['Substrate_ID']), 'rel_direction': int(row['Rule_relative_direction']), 'left': {self._checkMNXMdeprecated(row['Substrate_ID']): 1}, 'right': products}
+                    rr_reactions[row['# Rule_ID']][row['Reaction_ID']] = {'rule_id': row['# Rule_ID'], 'rule_score': float(row['Score_normalized']), 'reac_id': self._checkMNXRdeprecated(row['Reaction_ID']), 'subs_id': self._checkMNXMdeprecated(row['Substrate_ID']), 'rel_direction': int(row['Rule_relative_direction']), 'left': {self._checkMNXMdeprecated(row['Substrate_ID']): 1}, 'right': products}
                 except ValueError:
                     self.logger.error('Problem converting rel_direction: '+str(row['Rule_relative_direction']))
                     self.logger.error('Problem converting rule_score: '+str(row['Score_normalized']))
+            return rr_reactions
         except FileNotFoundError as e:
                 self.logger.error('Could not read the rules_rall file ('+str(rules_rall_path)+')')
                 return {}
-        return rule
 
 
     def _m_inchikey_mnxm(self):
         inchikey_mnxm = {}
-        for mnxm in self.mnxm_strc:
-            if not self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm:
-                inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']] = []
-            inchikey_mnxm[self.mnxm_strc[mnxm]['inchikey']].append(mnxm)
+        for mnxm in self.mnxm_strc.keys():
+            print('mnxm_strc', mnxm, self.mnxm_strc[mnxm], self.mnxm_strc[mnxm]['inchikey'])
+            print(inchikey_mnxm)
+            print('self.mnxm_strc['+mnxm+'][\'inchikey\'] in inchikey_mnxm: ', self.mnxm_strc[mnxm]['inchikey'] in inchikey_mnxm)
+            input("Press Enter to continue...")
+            inchikey = self.mnxm_strc[mnxm]['inchikey']
+            if not inchikey: inchikey = 'NO_INCHIKEY'
+            if not inchikey in inchikey_mnxm:
+                inchikey_mnxm[inchikey] = []
+            inchikey_mnxm[inchikey].append(mnxm)
         return inchikey_mnxm
 
     # rpReader
@@ -722,8 +797,8 @@ class rpCache:
     #  @return a The dictionnary of identifiers
     #TODO: save the self.deprecatedMNXM_mnxm to be used in case there rp_paths uses an old version of MNX
     def _m_compXref(self, compXref_path):
-        name_pubDB_xref = {}
-        compName_mnxc = {}
+        compXref = {}
+        name_compXref = {}
         try:
             with open(compXref_path) as f:
                 c = csv.reader(f, delimiter='\t')
@@ -743,19 +818,20 @@ class rpCache:
                         if dbName=='deprecated':
                             dbName = 'mnx'
                         #create the dicts
-                        if not mnxc in name_pubDB_xref:
-                            name_pubDB_xref[mnxc] = {}
-                        if not dbName in name_pubDB_xref[mnxc]:
-                            name_pubDB_xref[mnxc][dbName] = []
-                        if not dbCompId in name_pubDB_xref[mnxc][dbName]:
-                            name_pubDB_xref[mnxc][dbName].append(dbCompId)
+                        if not mnxc in compXref:
+                            compXref[mnxc] = {}
+                        if not dbName in compXref[mnxc]:
+                            compXref[mnxc][dbName] = []
+                        if not dbCompId in compXref[mnxc][dbName]:
+                            compXref[mnxc][dbName].append(dbCompId)
                         #create the reverse dict
-                        if not dbCompId in compName_mnxc:
-                            compName_mnxc[dbCompId] = mnxc
+                        if not dbCompId in name_compXref:
+                            name_compXref[dbCompId] = mnxc
         except FileNotFoundError:
             self.logger.error('compXref file not found')
             return {}
-        return name_pubDB_xref, compName_mnxc
+        return compXref,name_compXref
+
 
 
 def build_parser():
