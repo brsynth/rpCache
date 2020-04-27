@@ -690,7 +690,7 @@ class rpCache:
         return compXref,name_compXref
 
 
-def rpCache_add_arguments(parser):
+def add_arguments(parser):
     parser.add_argument('-sm', '--store_mode', type=str, default='file',
                         help='data storage mode: file or db')
     parser.add_argument('-p', '--print', type=bool, default=False,
@@ -698,7 +698,7 @@ def rpCache_add_arguments(parser):
     return parser
 
 def build_parser():
-    return rpCache_add_arguments(argparse_ArgumentParser('Python script to pre-compute data'))
+    return add_arguments(argparse_ArgumentParser('Python script to pre-compute data'))
 
 def entrypoint(params=sys.argv[1:]):
     parser = build_parser()
