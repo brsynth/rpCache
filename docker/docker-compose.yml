@@ -7,7 +7,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     image: brsynth/${COMPOSE_PROJECT_NAME}
-    command: python3.8 rpCache/rpCache.py
+    command: python3.8 rpCache/rpCache.py -sm db
     networks:
       - db
     depends_on:
