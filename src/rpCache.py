@@ -697,11 +697,11 @@ def rpCache_add_arguments(parser):
                         help='print additional informations')
     return parser
 
-def rpCache_build_parser():
+def build_parser():
     return rpCache_add_arguments(argparse_ArgumentParser('Python script to pre-compute data'))
 
 def entrypoint(params=sys.argv[1:]):
-    parser = rpCache_build_parser()
+    parser = build_parser()
 
     args = parser.parse_args(params)
 
