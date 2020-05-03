@@ -233,9 +233,6 @@ class rpCache:
         # input_cache
         if not os.path.isdir(dir):
             os.mkdir(dir)
-        # # cache
-        # if not os.path.isdir(self.dirname+'/cache'):
-        #     os.mkdir(self.dirname+'/cache')
 
         url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
@@ -270,7 +267,11 @@ class rpCache:
 
 
 
-    def populate_cache(self, attributes):
+    def populate_cache(self, attributes, dir):
+
+        # cache
+        if not os.path.isdir(dir):
+            os.mkdir(dir)
 
         data = self.gen_cache(attributes[0], [self.dirname+'/input_cache/'+input_file for input_file in attributes[1]])
 
@@ -278,11 +279,7 @@ class rpCache:
             _attr_name = attributes[0][i]
             print("Storing "+_attr_name+" to "+self.store_mode+"...", end = '', flush=True)
             method = getattr(self, 'store_cache_to_'+self.store_mode)
-            method(_attr_name, data[i])
-
-
-            # if self.store_mode=='file':
-            #     setattr(self, _attr_name, data[i])
+            method(dir+'/'+_attr_name+'.pickle', data[i])
 
 
 
@@ -323,8 +320,7 @@ class rpCache:
         else:
             return pickle_load(open(filename, 'rb'))
 
-    def store_cache_to_file(self, attr_name, data, gzip=False):
-        filename = self.dirname+'/cache/'+attr_name+'.pickle'
+    def store_cache_to_file(self, filename, data, gzip=False):
         pickle_obj = pickle_dumps(data)
         if gzip:
             filename += '.gz'
