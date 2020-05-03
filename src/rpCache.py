@@ -99,6 +99,14 @@ class rpCache:
             self.compXref = RedisDict('compXref', self.redis)
             self.name_compXref = RedisDict('name_compXref', self.redis)
         else:
+            # input_cache
+            self.input_cache_dir = self.dirname+'/input_cache/'
+            if not os.path.isdir(self.input_cache_dir):
+                os.mkdir(self.input_cache_dir)
+            # cache
+            self.cache_dir = self.dirname+'/cache/'
+            if not os.path.isdir(self.cache_dir):
+                os.mkdir(self.cache_dir)
             self.deprecatedMNXM_mnxm = None
             self.deprecatedMNXR_mnxr = None
             self.mnxm_strc = None
@@ -184,11 +192,11 @@ class rpCache:
                     # Then, for each corresponding input file
                     ####################### Fetch the files if necessary ######################
                     for input in attr_names[attr_name][1]:
-                        filename = self.dirname+'/input_cache/'+input
+                        filename = self.input_cache_dir+input
                         if not os.path.isfile(filename):
                             print("Downloading "+input+"...", end = '', flush=True)
                             start_time = time.time()
-                            self.fetch_input_file(input, self.dirname+'/input_cache/')
+                            self.fetch_input_file(input, self.input_cache_dir)
                             end_time = time.time()
 #                            print(" (%.2fs)" % (end_time - start_time))
                         else:
@@ -196,7 +204,7 @@ class rpCache:
                         self.print_OK(end_time-start_time)
                     ###################### Populate the cache #################################
                     start_time = time.time()
-                    self.populate_cache(attr_names[attr_name], self.dirname+'/cache')
+                    self.populate_cache(attr_names[attr_name], self.cache_dir)
                     end_time = time.time()
                     self.print_OK(end_time-start_time)
 
@@ -209,7 +217,7 @@ class rpCache:
             if self.store_mode=='file':
                 for i in range(len(attr_names[attr_name][0])):
                     _attr_name = attr_names[attr_name][0][i]
-                    filename = self.dirname+'/cache/'+_attr_name+'.pickle'
+                    filename = self.cache_dir+_attr_name+'.pickle'
                     print("Loading "+_attr_name+" from "+filename+"...", end = '', flush=True)
                     data = self.load_cache_from_file(filename)
                     setattr(self, _attr_name, data)
@@ -222,64 +230,59 @@ class rpCache:
 
     def cache_loaded(self, attr):
         if self.store_mode=='file':
-            return os.path.isfile(self.dirname+'/cache/'+attr+'.pickle')
+            return os.path.isfile(self.cache_dir+attr+'.pickle')
         else:
             return getattr(self, attr).exists()
 
 
-    def fetch_input_file(self, file, dir):
-
-        #################### make the local folders ############################
-        # input_cache
-        if not os.path.isdir(dir):
-            os.mkdir(dir)
+    def fetch_input_file(self, file):
 
         url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
         # 3xCommon + rpReader
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            urllib.request.urlretrieve(url+file, dir+'/'+file)
+            urllib.request.urlretrieve(url+file, self.input_cache_dir+'/'+file)
 
         #TODO: need to add this file to the git or another location
         if file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
             urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
-                                       dir+'/rr02_more_data.tar.gz')
-            tar = tarfile.open(dir+'/rr02_more_data.tar.gz', 'r:gz')
-            tar.extractall(dir)
+                                       self.input_cache_dir+'/rr02_more_data.tar.gz')
+            tar = tarfile.open(self.input_cache_dir+'/rr02_more_data.tar.gz', 'r:gz')
+            tar.extractall(self.input_cache_dir)
             tar.close()
-            shutil.move(dir+'/rr02_more_data/compounds.tsv',
-                        dir+'/rr_compounds.tsv')
-            shutil.move(dir+'/rr02_more_data/rxn_recipes.tsv',
-                        dir)
-            os.remove(dir+'rr02_more_data.tar.gz')
-            shutil.rmtree(dir+'rr02_more_data')
+            shutil.move(self.input_cache_dir+'/rr02_more_data/compounds.tsv',
+                        self.input_cache_dir+'/rr_compounds.tsv')
+            shutil.move(self.input_cache_dir+'/rr02_more_data/rxn_recipes.tsv',
+                        self.input_cache_dir)
+            os.remove(self.input_cache_dir+'rr02_more_data.tar.gz')
+            shutil.rmtree(self.input_cache_dir+'rr02_more_data')
 
         if file=='rules_rall.tsv':
             urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
-                                       dir+'/retrorules_rr02_rp3_hs.tar.gz')
-            tar = tarfile.open(dir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
-            tar.extractall(dir)
+                                       self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz')
+            tar = tarfile.open(self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
+            tar.extractall(self.input_cache_dir)
             tar.close()
-            shutil.move(dir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', dir+'/rules_rall.tsv')
-            os.remove(dir+'/retrorules_rr02_rp3_hs.tar.gz')
-            shutil.rmtree(dir+'/retrorules_rr02_rp3_hs')
+            shutil.move(self.input_cache_dir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', dir+'/rules_rall.tsv')
+            os.remove(self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz')
+            shutil.rmtree(self.input_cache_dir+'/retrorules_rr02_rp3_hs')
 
 
 
 
-    def populate_cache(self, attributes, dir):
+    def populate_cache(self, attributes):
 
         # cache
-        if not os.path.isdir(dir):
-            os.mkdir(dir)
+        if not os.path.isdir(self.cache_dir):
+            os.mkdir(self.cache_dir)
 
-        data = self.gen_cache(attributes[0], [self.dirname+'/input_cache/'+input_file for input_file in attributes[1]])
+        data = self.gen_cache(attributes[0], [self.input_cache_dir+input_file for input_file in attributes[1]])
 
         for i in range(len(data)):
             _attr_name = attributes[0][i]
             print("Storing "+_attr_name+" to "+self.store_mode+"...", end = '', flush=True)
             method = getattr(self, 'store_cache_to_'+self.store_mode)
-            method(dir+'/'+_attr_name+'.pickle', data[i])
+            method(_attr_name, data[i])
 
 
 
@@ -320,7 +323,8 @@ class rpCache:
         else:
             return pickle_load(open(filename, 'rb'))
 
-    def store_cache_to_file(self, filename, data, gzip=False):
+    def store_cache_to_file(self, _attr_name, data, gzip=False):
+        filename = self.cache_dir+'/'+_attr_name+'.pickle'
         pickle_obj = pickle_dumps(data)
         if gzip:
             filename += '.gz'
