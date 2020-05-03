@@ -681,7 +681,7 @@ class rpCache:
 def add_arguments(parser):
     parser.add_argument('-sm', '--store_mode', type=str, default='file',
                         help='data storage mode: file or db')
-    parser.add_argument('-p', '--print', type=bool, default=False,
+    parser.add_argument('-p', type=bool, default=False,
                         help='print additional informations')
     return parser
 
