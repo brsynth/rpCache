@@ -163,23 +163,15 @@ class rpCache:
     def loadCache(self, fetchInputFiles=False):
 
 
-        #################### make the local folders ############################
-        # input_cache
-        if not os.path.isdir(self.dirname+'/input_cache'):
-            os.mkdir(self.dirname+'/input_cache')
-        # cache
-        if not os.path.isdir(self.dirname+'/cache'):
-            os.mkdir(self.dirname+'/cache')
-
         # ###################### Fetch the files if necessary ######################
         self.fetch_input_files(fetchInputFiles)
-
-
 
         ###################### Populate the cache #################################
         self.populate_cache()
 
         return True
+
+
 
     def populate_cache(self):
         input_cache = self.dirname+'/input_cache'
@@ -300,6 +292,15 @@ class rpCache:
 
 
     def fetch_input_files(self, fetchInputFiles=False):
+
+        #################### make the local folders ############################
+        # input_cache
+        if not os.path.isdir(self.dirname+'/input_cache'):
+            os.mkdir(self.dirname+'/input_cache')
+        # cache
+        if not os.path.isdir(self.dirname+'/cache'):
+            os.mkdir(self.dirname+'/cache')
+
         url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
         # 3xCommon + rpReader
