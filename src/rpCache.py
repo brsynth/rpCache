@@ -204,7 +204,7 @@ class rpCache:
                         self.print_OK(end_time-start_time)
                     ###################### Populate the cache #################################
                     start_time = time.time()
-                    self.populate_cache(attr_names[attr_name], self.cache_dir)
+                    self.populate_cache(attr_names[attr_name])
                     end_time = time.time()
                     self.print_OK(end_time-start_time)
 
@@ -271,10 +271,6 @@ class rpCache:
 
 
     def populate_cache(self, attributes):
-
-        # cache
-        if not os.path.isdir(self.cache_dir):
-            os.mkdir(self.cache_dir)
 
         data = self.gen_cache(attributes[0], [self.input_cache_dir+input_file for input_file in attributes[1]])
 
