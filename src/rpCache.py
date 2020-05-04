@@ -86,6 +86,11 @@ class rpCache:
 
         self.store_mode = db
 
+        # input_cache
+        self.input_cache_dir = self.dirname+'/input_cache/'
+        if not os.path.isdir(self.input_cache_dir):
+            os.mkdir(self.input_cache_dir)
+
         if self.store_mode!='file':
             self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
             self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
@@ -99,10 +104,6 @@ class rpCache:
             self.compXref = RedisDict('compXref', self.redis)
             self.name_compXref = RedisDict('name_compXref', self.redis)
         else:
-            # input_cache
-            self.input_cache_dir = self.dirname+'/input_cache/'
-            if not os.path.isdir(self.input_cache_dir):
-                os.mkdir(self.input_cache_dir)
             # cache
             self.cache_dir = self.dirname+'/cache/'
             if not os.path.isdir(self.cache_dir):
