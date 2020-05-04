@@ -86,6 +86,7 @@ class rpCache:
 
         self.store_mode = db
 
+        self.dirname = os.path.dirname(os.path.abspath( __file__ ))+"/.."
         # input_cache
         self.input_cache_dir = self.dirname+'/input_cache/'
         if not os.path.isdir(self.input_cache_dir):
@@ -133,8 +134,6 @@ class rpCache:
                             'MNXM145523': 'MNXM57',
                             'MNXM57425': 'MNXM9',
                             'MNXM137': 'MNXM588022'}
-
-        self.dirname = os.path.dirname(os.path.abspath( __file__ ))+"/.."
 
 
         if not self.loadCache():
@@ -197,7 +196,7 @@ class rpCache:
                         if not os.path.isfile(filename):
                             print("Downloading "+input+"...", end = '', flush=True)
                             start_time = time.time()
-                            self.fetch_input_file(input, self.input_cache_dir)
+                            self.fetch_input_file(input)
                             end_time = time.time()
 #                            print(" (%.2fs)" % (end_time - start_time))
                         else:
