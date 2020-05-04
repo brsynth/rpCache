@@ -68,6 +68,16 @@ def total_size(o, handlers={}, verbose=False):
 
     return sizeof(o)
 
+from redis import ConnectionError as redis_conn_error
+def wait_for_redis(redis_conn):
+    redis_on = False
+    while not redis_on:
+        try:
+            redis_conn.ping()
+            redis_on = True
+        except redis_conn_error:
+            print("Waiting for redis connection...")
+            time.sleep(5)
 
 ## Class to generate the cache
 #
@@ -94,6 +104,8 @@ class rpCache:
 
         if self.store_mode!='file':
             self.redis = redis.StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
+            wait_for_redis(self.redis)
+            print('Connected to redis "{}"'.format(self.store_mode))
             self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
             self.deprecatedMNXR_mnxr = RedisDict('deprecatedMNXR_mnxr', self.redis)
             self.mnxm_strc = RedisDict('mnxm_strc', self.redis)
