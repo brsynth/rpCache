@@ -275,7 +275,7 @@ class rpCache:
             tar = tarfile.open(self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
             tar.extractall(self.input_cache_dir)
             tar.close()
-            shutil.move(self.input_cache_dir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', dir+'/rules_rall.tsv')
+            shutil.move(self.input_cache_dir+'/retrorules_rr02_rp3_hs/retrorules_rr02_flat_all.tsv', self.input_cache_dir+'/rules_rall.tsv')
             os.remove(self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz')
             shutil.rmtree(self.input_cache_dir+'/retrorules_rr02_rp3_hs')
 
