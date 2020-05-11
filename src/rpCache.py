@@ -700,12 +700,12 @@ def add_arguments(parser):
 def build_parser():
     return add_arguments(argparse_ArgumentParser('Python script to pre-compute data'))
 
-def entrypoint(params=sys.argv[1:]):
+def entrypoint(args=sys.argv[1:]):
     parser = build_parser()
 
-    args = parser.parse_args(params)
+    params = parser.parse_args(args)
 
-    rpcache = rpCache(args.store_mode, args.print)
+    rpcache = rpCache(params.store_mode, params.print)
 
 ##
 #
