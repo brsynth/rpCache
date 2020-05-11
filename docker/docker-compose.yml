@@ -38,6 +38,7 @@ services:
     volumes:
       - redis:/data
       - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    mem_limit: 1024m
 
   backup:
     image: alpine
