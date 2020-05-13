@@ -70,16 +70,36 @@ def total_size(o, handlers={}, verbose=False):
 
     return sizeof(o)
 
+def print_OK(time=-1):
+    sys.stdout.write("\033[0;32m") # Green
+    print(" OK", end = '', flush=True)
+    sys.stdout.write("\033[0;0m") # Reset
+    if time!=-1: print(" (%.2fs)" % time, end = '', flush=True)
+    print()
+
+def print_FAILED():
+    sys.stdout.write("\033[1;31m") # Red
+    print(" Failed")
+    sys.stdout.write("\033[0;0m") # Reset
+    print()
+
 from redis import ConnectionError as redis_conn_error
-def wait_for_redis(redis_conn):
+def wait_for_redis(redis_conn, time_limit):
     redis_on = False
-    while not redis_on:
+    start = time.time()
+    end = time.time()
+    print("Waiting for redis connection...", end = '', flush=True)
+    while (not redis_on) and (end-start<time_limit) :
         try:
             redis_conn.ping()
             redis_on = True
         except redis_conn_error:
-            print("Waiting for redis connection...")
+            print(".", end = '', flush=True)
             time.sleep(5)
+            end = time.time()
+    if redis_on: print_OK()
+    else: print_FAILED()
+    return redis_on
 
 ## Class to generate the cache
 #
@@ -106,8 +126,9 @@ class rpCache:
 
         if self.store_mode!='file':
             self.redis = redis_StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
-            wait_for_redis(self.redis)
-            print('Connected to redis "{}"'.format(self.store_mode))
+            if not wait_for_redis(self.redis, 30):
+                self.logger.critical("Database "+self.store_mode+" is not reachable")
+                exit()
             self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
             self.deprecatedMNXR_mnxr = RedisDict('deprecatedMNXR_mnxr', self.redis)
             self.mnxm_strc = RedisDict('mnxm_strc', self.redis)
@@ -221,17 +242,17 @@ class rpCache:
 #                            print(" (%.2fs)" % (end_time - start_time))
                         else:
                             print(filename+" already downloaded ", end = '', flush=True)
-                        self.print_OK(end_time-start_time)
+                        print_OK(end_time-start_time)
                     ###################### Populate the cache #################################
                     start_time = time.time()
                     self.populate_cache(attr_names[attr_name])
                     end_time = time.time()
-                    self.print_OK(end_time-start_time)
+                    print_OK(end_time-start_time)
 
                 elif not self.store_mode=='file':
 
                     print(" ".join(attr_names[attr_name][0])+" already in db ", end = '', flush=True)
-                    self.print_OK()
+                    print_OK()
 
             # Load cache from file
             if self.store_mode=='file':
@@ -241,7 +262,7 @@ class rpCache:
                     print("Loading "+_attr_name+" from "+filename+"...", end = '', flush=True)
                     data = self.load_cache_from_file(filename)
                     setattr(self, _attr_name, data)
-                    self.print_OK()
+                    print_OK()
 
 
         return True
@@ -302,19 +323,6 @@ class rpCache:
 
 
 
-    def print_OK(self, time=-1):
-        sys.stdout.write("\033[0;32m") # Green
-        print(" OK", end = '', flush=True)
-        sys.stdout.write("\033[0;0m") # Reset
-        if time!=-1: print(" (%.2fs)" % time, end = '', flush=True)
-        print()
-
-    def print_FAILED(self):
-        sys.stdout.write("\033[1;31m") # Red
-        print(" Failed")
-        sys.stdout.write("\033[0;0m") # Reset
-        print()
-
 
     ## Method to generate data to be cached
     #
@@ -335,10 +343,10 @@ class rpCache:
             results = [method(*args)]
             if type(results[0]) is tuple:
                 results = list(itertools_chain(results[0]))
-            self.print_OK()
+            print_OK()
             return results
         except:
-            self.print_FAILED()
+            print_FAILED()
             raise
 
 
