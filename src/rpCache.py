@@ -7,7 +7,7 @@ from pickle import load as pickle_load
 from pickle import loads as pickle_loads
 from pickle import dumps as pickle_dumps
 from gzip import open as gzip_open
-import urllib.request
+from urllib.request import urlretrieve as urllib_request_urlretrieve
 from re import findall as re_findall
 from tarfile import open as tarfile_open
 from shutil import move as shutil_move
@@ -116,6 +116,10 @@ class rpCache:
     # @param db Mode of storing objects ('file' or 'redis')
     def __init__(self, db='file', print_infos=False):
 
+        #given by Thomas
+        self.logger = logging_getLogger(__name__)
+        self.logger.info('Started instance of rpCache')
+
         self.store_mode = db
 
         self.dirname = os.path.dirname(os.path.abspath( __file__ ))+"/.."
@@ -160,9 +164,6 @@ class rpCache:
             self.full_reactions = None
 
 
-        #given by Thomas
-        self.logger = logging_getLogger(__name__)
-        self.logger.info('Started instance of rpCache')
 
         self.print = print_infos
 
@@ -282,11 +283,11 @@ class rpCache:
 
         # 3xCommon + rpReader
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
-            urllib.request.urlretrieve(url+file, self.input_cache_dir+'/'+file)
+            urllib_request_urlretrieve(url+file, self.input_cache_dir+'/'+file)
 
         #TODO: need to add this file to the git or another location
         if file in ['rr_compounds.tsv', 'rxn_recipes.tsv']:
-            urllib.request.urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
+            urllib_request_urlretrieve('https://retrorules.org/dl/this/is/not/a/secret/path/rr02',
                                        self.input_cache_dir+'/rr02_more_data.tar.gz')
             tar = tarfile_open(self.input_cache_dir+'/rr02_more_data.tar.gz', 'r:gz')
             tar.extractall(self.input_cache_dir)
@@ -299,7 +300,7 @@ class rpCache:
             shutil_rmtree(self.input_cache_dir+'rr02_more_data')
 
         if file=='rules_rall.tsv':
-            urllib.request.urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
+            urllib_request_urlretrieve('https://retrorules.org/dl/preparsed/rr02/rp3/hs',
                                        self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz')
             tar = tarfile_open(self.input_cache_dir+'/retrorules_rr02_rp3_hs.tar.gz', 'r:gz')
             tar.extractall(self.input_cache_dir)
