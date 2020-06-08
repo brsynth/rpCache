@@ -125,8 +125,6 @@ class rpCache:
         self.dirname = os.path.dirname(os.path.abspath( __file__ ))+"/.."
         # input_cache
         self.input_cache_dir = self.dirname+'/input_cache/'
-        if not os.path.isdir(self.input_cache_dir):
-            os.mkdir(self.input_cache_dir)
 
         if self.store_mode!='file':
             self.redis = redis_StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
@@ -278,6 +276,9 @@ class rpCache:
 
 
     def fetch_input_file(self, file):
+
+        if not os.path.isdir(self.input_cache_dir):
+            os.mkdir(self.input_cache_dir)
 
         url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
 
