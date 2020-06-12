@@ -1,4 +1,5 @@
-FROM brsynth/rdkit:debian
+ARG IMAGE
+FROM ${IMAGE}
 
 COPY requirements.txt .
 # install requirements
