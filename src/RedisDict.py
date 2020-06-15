@@ -1,3 +1,9 @@
+"""
+Created on April 10 2020
+
+@author: Joan Hérisson
+"""
+
 from json import loads as json_loads
 from json import dumps as json_dumps
 from redis import Redis
