@@ -12,13 +12,12 @@ from re import findall as re_findall
 from tarfile import open as tarfile_open
 from shutil import move as shutil_move
 from shutil import rmtree as shutil_rmtree
-from redis import StrictRedis as redis_StrictRedis
-from CRedisDict import CRedisDict as RedisDict
+from redis import StrictRedis
+from CRedisDict import CRedisDict, wait_for_redis
 from argparse import ArgumentParser as argparse_ArgumentParser
 import sys
 import time
 from itertools import chain as itertools_chain
-sys.path.insert(0, '/home/rpCache')
 
 #######################################################
 ################### rpCache  ##########################
@@ -83,23 +82,6 @@ def print_FAILED():
     sys.stdout.write("\033[0;0m") # Reset
     print()
 
-from redis import ConnectionError as redis_conn_error
-def wait_for_redis(redis_conn, time_limit):
-    redis_on = False
-    start = time.time()
-    end = time.time()
-    print("Waiting for redis connection...", end = '', flush=True)
-    while (not redis_on) and (end-start<time_limit) :
-        try:
-            redis_conn.ping()
-            redis_on = True
-        except redis_conn_error:
-            print(".", end = '', flush=True)
-            time.sleep(5)
-            end = time.time()
-    if redis_on: print_OK()
-    else: print_FAILED()
-    return redis_on
 
 ## Class to generate the cache
 #
@@ -127,22 +109,22 @@ class rpCache:
         self.input_cache_dir = self.dirname+'/input_cache/'
 
         if self.store_mode!='file':
-            self.redis = redis_StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
+            self.redis = StrictRedis(host=self.store_mode, port=6379, db=0, decode_responses=True)
             if not wait_for_redis(self.redis, 30):
                 self.logger.critical("Database "+self.store_mode+" is not reachable")
                 exit()
-            self.deprecatedMNXM_mnxm = RedisDict('deprecatedMNXM_mnxm', self.redis)
-            self.deprecatedMNXR_mnxr = RedisDict('deprecatedMNXR_mnxr', self.redis)
-            self.mnxm_strc = RedisDict('mnxm_strc', self.redis)
-            self.chemXref = RedisDict('chemXref', self.redis)
-            self.rr_reactions = RedisDict('rr_reactions', self.redis)
-            self.chebi_mnxm = RedisDict('chebi_mnxm', self.redis)
+            self.deprecatedMNXM_mnxm = CRedisDict('deprecatedMNXM_mnxm', self.redis)
+            self.deprecatedMNXR_mnxr = CRedisDict('deprecatedMNXR_mnxr', self.redis)
+            self.mnxm_strc = CRedisDict('mnxm_strc', self.redis)
+            self.chemXref = CRedisDict('chemXref', self.redis)
+            self.rr_reactions = CRedisDict('rr_reactions', self.redis)
+            self.chebi_mnxm = CRedisDict('chebi_mnxm', self.redis)
             # rpReader attributes
-            self.inchikey_mnxm = RedisDict('inchikey_mnxm', self.redis)
-            self.compXref = RedisDict('compXref', self.redis)
-            self.name_compXref = RedisDict('name_compXref', self.redis)
+            self.inchikey_mnxm = CRedisDict('inchikey_mnxm', self.redis)
+            self.compXref = CRedisDict('compXref', self.redis)
+            self.name_compXref = CRedisDict('name_compXref', self.redis)
             # rpCofactors attributes
-            self.full_reactions = RedisDict('full_reactions', self.redis)
+            self.full_reactions = CRedisDict('full_reactions', self.redis)
         else:
             # cache
             self.cache_dir = self.dirname+'/cache/'
@@ -387,13 +369,13 @@ class rpCache:
 
     ## Method to store data into redis database
     #
-    #  Assign a RedisDict object to the attribute to copy data into the database
+    #  Assign a CRedisDict object to the attribute to copy data into the database
     #
     #  @param self Object pointer
     #  @param attr_name Attribute name (database key)
     #  @param data Content of the attribute
     def store_cache_to_db(self, attr_name, data):
-        setattr(self, attr_name, RedisDict(attr_name, self.redis, data))
+        setattr(self, attr_name, CRedisDict(attr_name, self.redis, data))
 
 
 
