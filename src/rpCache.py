@@ -13,7 +13,7 @@ from tarfile import open as tarfile_open
 from shutil import move as shutil_move
 from shutil import rmtree as shutil_rmtree
 from redis import StrictRedis as redis_StrictRedis
-from ComplexRedisDict import CRedisDict as RedisDict
+from CRedisDict import CRedisDict as RedisDict
 from argparse import ArgumentParser as argparse_ArgumentParser
 import sys
 import time
