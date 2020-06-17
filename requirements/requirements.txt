@@ -5,5 +5,4 @@
 #    pip-compile requirements.in
 #
 credisdict==0.1.4         # via -r requirements.in
-python-libsbml==5.18.0    # via -r requirements.in
 redis==3.5.3              # via -r requirements.in, credisdict
