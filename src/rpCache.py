@@ -197,7 +197,7 @@ class rpCache:
         if self.store_mode=='file':
             return os.path.isfile(self.cache_dir+attr+'.pickle')
         else:
-            return getattr(self, attr).exists()
+            return CRedisDict.exists(self.redis, attr)
 
 
     def fetch_input_file(self, file):
