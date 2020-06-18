@@ -262,7 +262,8 @@ class rpCache:
         if not os.path.isdir(self.input_cache_dir):
             os.mkdir(self.input_cache_dir)
 
-        url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
+        #url = 'https://www.metanetx.org/cgi-bin/mnxget/mnxref/'
+        url = 'ftp://ftp.vital-it.ch/databases/metanetx/MNXref/3.2/'
 
         # 3xCommon + rpReader
         if file in ['reac_xref.tsv', 'chem_xref.tsv', 'chem_prop.tsv', 'comp_xref.tsv']:
