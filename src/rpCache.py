@@ -18,69 +18,12 @@ from argparse import ArgumentParser as argparse_ArgumentParser
 import sys
 import time
 from itertools import chain as itertools_chain
+from brs_utils import print_OK, print_FAILED
 
 #######################################################
 ################### rpCache  ##########################
 #######################################################
 
-from collections import deque
-try:
-    from reprlib import repr
-except ImportError:
-    pass
-
-def total_size(o, handlers={}, verbose=False):
-    """ Returns the approximate memory footprint an object and all of its contents.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-
-    """
-    dict_handler = lambda d: chain.from_iterable(d.items())
-    all_handlers = {tuple: iter,
-                    list: iter,
-                    deque: iter,
-                    dict: dict_handler,
-                    set: iter,
-                    frozenset: iter,
-                   }
-    all_handlers.update(handlers)     # user handlers take precedence
-    seen = set()                      # track which object id's have already been seen
-    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
-
-    def sizeof(o):
-        if id(o) in seen:       # do not double count the same object
-            return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
-
-        if verbose:
-            print(s, type(o), repr(o), file=stderr)
-
-        for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
-                break
-        return s
-
-    return sizeof(o)
-
-def print_OK(time=-1):
-    sys.stdout.write("\033[0;32m") # Green
-    print(" OK", end = '', flush=True)
-    sys.stdout.write("\033[0;0m") # Reset
-    if time!=-1: print(" (%.2fs)" % time, end = '', flush=True)
-    print()
-
-def print_FAILED():
-    sys.stdout.write("\033[1;31m") # Red
-    print(" Failed")
-    sys.stdout.write("\033[0;0m") # Reset
-    print()
 
 
 ## Class to generate the cache
